@@ -248,11 +248,23 @@ main{padding:24px 28px;max-width:1440px;margin:0 auto;}
   border-radius:50%;animation:spin 1s linear infinite;margin-bottom:14px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .loading-text{color:var(--muted);font-size:13px;}
+#loadError code{color:var(--accent3);word-break:break-all;}
 </style>
 </head>
 <body class="view-only">
 
-<div id="loading"><div class="spinner"></div><div class="loading-text">Đang kết nối Supabase...</div></div>
+<div id="loading">
+  <div class="spinner" id="loadSpinner"></div>
+  <div class="loading-text" id="loadText">Đang kết nối Supabase...</div>
+  <div id="loadError" style="display:none;margin-top:18px;max-width:460px;padding:20px;
+    background:#1c2333;border:1px solid #ff5c57;border-radius:12px;text-align:left">
+    <div style="color:#ff5c57;font-weight:700;font-size:14px;margin-bottom:10px">⚠️ Không thể kết nối</div>
+    <div id="loadErrorMsg" style="color:#c9d1d9;font-size:13px;line-height:1.6;margin-bottom:14px"></div>
+    <button onclick="window.location.reload()"
+      style="background:#2dce89;color:#000;border:none;padding:8px 20px;
+      border-radius:8px;font-weight:700;font-size:13px;cursor:pointer">↻ Thử lại</button>
+  </div>
+</div>
 
 <!-- Auth bar -->
 <div class="auth-bar" id="authBar">
@@ -671,8 +683,7 @@ async function loadDashboard(){
     years.forEach(y=>sel.innerHTML+=`<option value="${y}">${y}</option>`);
     buildSlicer(years);
     applyFilter();
-  } catch(e){ showToast('Lỗi tải dữ liệu: '+e.message,'err'); }
-  finally { document.getElementById('loading').style.display='none'; }
+  } catch(e){ throw e; } // re-throw để window.onload bắt
 }
 
 async function loadDropdowns(){
@@ -826,7 +837,7 @@ function renderThang(type){
       layout:{padding:{top:type==='line'?24:8}},
       plugins:{legend:{display:true,position:'top',labels:{color:'#c9d1d9',font:{size:11},boxWidth:10,boxHeight:10,padding:14}},
         tooltip:{callbacks:{label:c=>`  ${c.dataset.label}: ${c.parsed.y!=null?fmt(c.parsed.y)+' km':'—'}`}}},
-      scales:{x:{grid:{color:'#30363d55'},ticks:{color:var(--muted)}},
+      scales:{x:{grid:{color:'#30363d55'},ticks:{color:'#7d8590'}},
               y:{grid:{color:'#30363d55'},ticks:{color:'#7d8590',callback:v=>fmt(v)}}}},plugins:[lp]});
 }
 
@@ -1289,10 +1300,62 @@ async function confirmDelete(){
 // ╔══════════════════════════════════════════════════════════╗
 // ║  INIT                                                    ║
 // ╚══════════════════════════════════════════════════════════╝
-window.onload=async function(){
-  await initAuth();
-  await loadDashboard();
+function hideLoading(){
   document.getElementById('loading').style.display='none';
+}
+function showLoadError(msg){
+  document.getElementById('loadSpinner').style.display='none';
+  document.getElementById('loadText').style.display='none';
+  document.getElementById('loadError').style.display='block';
+  document.getElementById('loadErrorMsg').innerHTML=msg;
+}
+
+window.onload=async function(){
+  // Kiểm tra config còn placeholder không
+  if(SUPABASE_URL.includes('XXXXXXXXXXXX')||SUPABASE_URL.includes('YOUR_')){
+    showLoadError(
+      '<b>Chưa cấu hình Supabase!</b><br><br>'+
+      'Mở file HTML, tìm phần CONFIG và thay 2 dòng sau:<br><br>'+
+      '<code style="background:#0d1117;padding:8px;border-radius:6px;display:block;margin:6px 0;font-size:12px">'+
+      'const SUPABASE_URL = 'https://abc123.supabase.co'<br>'+
+      'const SUPABASE_ANON = 'eyJhbGci...'</code>'+
+      'Lấy giá trị tại: <b>Supabase → Settings → API</b>'
+    );
+    return;
+  }
+  if(SUPABASE_ANON.includes('YOUR_ANON_KEY')){
+    showLoadError('<b>Chưa điền anon key!</b><br>Lấy tại: Supabase → Settings → API → anon public');
+    return;
+  }
+
+  // Timeout 15 giây
+  const timeout=setTimeout(()=>{
+    showLoadError(
+      '<b>Kết nối quá thời gian (15s)</b><br><br>Kiểm tra:<br>'+
+      '• SUPABASE_URL và SUPABASE_ANON có đúng không?<br>'+
+      '• Mở F12 → Console xem lỗi chi tiết<br>'+
+      '• Supabase project có đang hoạt động không?'
+    );
+  }, 15000);
+
+  try {
+    document.getElementById('loadText').textContent='Đang kiểm tra kết nối...';
+    await initAuth();
+    document.getElementById('loadText').textContent='Đang tải dữ liệu dashboard...';
+    await loadDashboard();
+    clearTimeout(timeout);
+    hideLoading();
+  } catch(e) {
+    clearTimeout(timeout);
+    showLoadError(
+      '<b>Lỗi kết nối:</b><br><br>'+
+      (e.message||String(e))+'<br><br>'+
+      'Kiểm tra:<br>'+
+      '• URL và anon key có đúng không?<br>'+
+      '• Row Level Security đã cấu hình chưa?<br>'+
+      '• Mở F12 → Console để xem chi tiết'
+    );
+  }
 };
 </script>
 </body>

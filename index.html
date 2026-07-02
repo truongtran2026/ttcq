@@ -559,15 +559,18 @@ main{padding:24px 28px;max-width:1440px;margin:0 auto;}
 
 <script>
 // ╔══════════════════════════════════════════════════════════╗
-// ║  CONFIG — THAY 2 DÒNG NÀY                               ║
+// ║  CONFIG — BẮT BUỘC PHẢI THAY 2 DÒNG DƯỚI ĐÂY          ║
+// ║  Lấy tại: Supabase → Settings → API                     ║
 // ╚══════════════════════════════════════════════════════════╝
-const SUPABASE_URL  = 'https://unrufjrijppssccacwkq.supabase.co';       // ← Project URL
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVucnVmanJpanBwc3NjY2Fjd2txIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5MTE0NjUsImV4cCI6MjA5ODQ4NzQ2NX0.MONVuUNfEy_A5JScwkwnv0_52igp9YFE8u7TmABwpKA';      // ← anon public key
+// BƯỚC 1: Thay URL này bằng Project URL của bạn
+const SUPABASE_URL  = 'https://unrufjrijppssccacwkq.supabase.co';
+// BƯỚC 2: Thay key này bằng anon public key của bạn (chuỗi rất dài bắt đầu bằng eyJ...)
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVucnVmanJpanBwc3NjY2Fjd2txIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5MTE0NjUsImV4cCI6MjA5ODQ4NzQ2NX0.MONVuUNfEy_A5JScwkwnv0_52igp9YFE8u7TmABwpKA';
 
 // Email được phép chỉnh sửa (khớp với SQL)
 const EDIT_ALLOWED = [
-  'ongtienonline@gmail.com',
-  'truongtrandn2025@gmail.com'
+  'your.email@gmail.com',
+  'colleague@gmail.com'
 ];
 // ════════════════════════════════════════════════════════════
 

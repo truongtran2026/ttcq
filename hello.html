@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>TTCQ Test</title>
+<style>
+  body { font-family: monospace; background: #0d1117; color: #f0f6fc;
+         display: flex; align-items: center; justify-content: center;
+         min-height: 100vh; margin: 0; padding: 20px; }
+  .box { background: #1c2333; border: 1px solid #30363d; border-radius: 12px;
+         padding: 28px; max-width: 500px; width: 100%; }
+  h2 { color: #2dce89; margin-bottom: 20px; }
+  .row { margin: 10px 0; font-size: 14px; }
+  .ok  { color: #2dce89; }
+  .err { color: #ff5c57; }
+  .spin { display: inline-block; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  input { background: #161b22; border: 1px solid #30363d; color: #f0f6fc;
+          padding: 8px 12px; border-radius: 6px; width: 100%;
+          font-family: monospace; font-size: 12px; margin: 6px 0; }
+  button { background: #2dce89; color: #000; border: none;
+           padding: 10px 24px; border-radius: 8px;
+           font-weight: 700; font-size: 14px; cursor: pointer;
+           margin-top: 10px; width: 100%; }
+</style>
+</head>
+<body>
+<div class="box">
+  <h2>📡 TTCQ — Kiểm tra pipeline</h2>
+
+  <div class="row">Project URL:</div>
+  <input id="urlInput" type="text" value="https://unrufjrijppssccacwkq.supabase.co" />
+  <div class="row" style="margin-top:10px">Anon Key:</div>
+  <input id="keyInput" type="text" placeholder="eyJhbGci..." />
+  <button onclick="test()">▶ Kiểm tra kết nối</button>
+
+  <div id="results" style="margin-top:20px;line-height:2"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// URL đã điền sẵn từ kết quả test
+const SB_URL = 'https://unrufjrijppssccacwkq.supabase.co';
+
+function log(msg, type) {
+  document.getElementById('results').innerHTML +=
+    '<div class="row ' + (type||'') + '">' + msg + '</div>';
+}
+
+async function test() {
+  document.getElementById('results').innerHTML = '';
+  const key = document.getElementById('keyInput').value.trim();
+
+  if (!key || key.length < 50) {
+    log('❌ Key quá ngắn hoặc trống — paste anon key từ Supabase > Settings > API', 'err');
+    return;
+  }
+
+  log('<span class="spin">⟳</span> Đang kết nối...', '');
+
+  try {
+    const url = document.getElementById('urlInput').value.trim();
+    if(!url) { log('❌ URL trống', 'err'); return; }
+    const sb = supabase.createClient(url, key);
+
+    // Test 1: query bảng chính
+    const { data, error } = await sb
+      .from('ttcq_records')
+      .select('id, ngay')
+      .order('ngay', { ascending: false })
+      .limit(3);
+
+    if (error) {
+      document.getElementById('results').innerHTML = '';
+      log('❌ Lỗi: ' + error.message + ' (code: ' + error.code + ')', 'err');
+      if (error.code === '42501') log('→ Lỗi RLS — chạy lại file supabase_setup.sql', 'err');
+      if (error.code === '42P01') log('→ Bảng ttcq_records chưa tồn tại', 'err');
+      return;
+    }
+
+    document.getElementById('results').innerHTML = '';
+    log('✓ Kết nối thành công!', 'ok');
+    log('✓ Bảng ttcq_records: OK (' + (data ? data.length : 0) + ' dòng gần nhất)', 'ok');
+
+    // Test 2: views
+    const { data: d2, error: e2 } = await sb.from('v_thong_ke_nam').select('*').limit(1);
+    if (e2) {
+      log('⚠️ View v_thong_ke_nam chưa tồn tại — cần chạy lại supabase_setup.sql', 'err');
+    } else {
+      log('✓ View v_thong_ke_nam: OK', 'ok');
+    }
+
+    const { data: d3, error: e3 } = await sb.from('v_thong_ke_thang').select('*').limit(1);
+    if (e3) {
+      log('⚠️ View v_thong_ke_thang chưa tồn tại', 'err');
+    } else {
+      log('✓ View v_thong_ke_thang: OK', 'ok');
+    }
+
+    const { data: d4, error: e4 } = await sb.from('v_lu_tru_nam').select('*').limit(1);
+    if (e4) {
+      log('⚠️ View v_lu_tru_nam chưa tồn tại', 'err');
+    } else {
+      log('✓ View v_lu_tru_nam: OK', 'ok');
+    }
+
+    // Test 3: function
+    const { data: d5, error: e5 } = await sb.rpc('get_loai_stats');
+    if (e5) {
+      log('⚠️ Function get_loai_stats chưa tồn tại', 'err');
+    } else {
+      log('✓ Function get_loai_stats: OK', 'ok');
+    }
+
+    log('', '');
+    log('🎉 Pipeline hoạt động tốt! Dùng key này cho file chính.', 'ok');
+    log('Key (50 ký tự đầu): ' + key.substring(0,50) + '...', 'ok');
+
+    // Tự động copy vào clipboard
+    try {
+      await navigator.clipboard.writeText(key);
+      log('✓ Key đã copy vào clipboard', 'ok');
+    } catch(e) {}
+
+  } catch(e) {
+    document.getElementById('results').innerHTML = '';
+    log('❌ Lỗi không xác định: ' + e.message, 'err');
+    log('→ Mở F12 > Console để xem chi tiết', 'err');
+  }
+}
+</script>
+</body>
+</html>

@@ -572,11 +572,13 @@ const EDIT_ALLOWED = [
 ];
 // ════════════════════════════════════════════════════════════
 
-// Key ưu tiên: localStorage > constant (constant sẽ là '' nếu chưa setup)
-const _ACTIVE_KEY = localStorage.getItem('ttcq_anon_key') || SUPABASE_ANON;
-const sb = supabase.createClient(SUPABASE_URL, _ACTIVE_KEY, {
-  auth: { redirectTo: window.location.href }
-});
+// sb được khởi tạo trong window.onload sau khi có key
+let sb = null;
+function initSb(key){
+  sb = supabase.createClient(SUPABASE_URL, key, {
+    auth: { redirectTo: window.location.href }
+  });
+}
 
 // ── State ──────────────────────────────────────────────────
 let SB_USER    = null;
@@ -1347,16 +1349,16 @@ async function applySetupKey(){
   }
   status.innerHTML='<span style="color:#ffab40">⏳ Đang kiểm tra kết nối...</span>';
   try {
-    const testSb = supabase.createClient(SUPABASE_URL, key);
-    const {error} = await testSb.from('ttcq_records').select('id').limit(1);
-    if(error) throw new Error(error.message);
-    // Lưu key vào localStorage
+    // Tạo client thử nghiệm
+    const testSb = supabase.createClient(SUPABASE_URL, key, {auth:{persistSession:false}});
+    const {data,error} = await testSb.from('ttcq_records').select('id').limit(1);
+    if(error) throw new Error('['+error.code+'] '+error.message);
+    // OK → lưu key và reload
     localStorage.setItem('ttcq_anon_key', key);
     status.innerHTML='<span style="color:#2dce89">✓ Kết nối thành công! Đang tải...</span>';
-    // Reload để khởi động với key mới
     setTimeout(()=>window.location.reload(), 800);
   } catch(e) {
-    status.innerHTML='<span style="color:#ff5c57">❌ Lỗi: '+e.message+'</span>';
+    status.innerHTML='<span style="color:#ff5c57">❌ '+e.message+'</span>';
   }
 }
 
@@ -1380,8 +1382,7 @@ window.onload=async function(){
 
   try {
     document.getElementById('loadText').textContent='Đang kiểm tra kết nối...';
-    // Khởi tạo Supabase với key từ localStorage
-    window._sb_override_key = savedKey;
+    initSb(savedKey); // Khởi tạo Supabase client với key thật
     await initAuth();
     document.getElementById('loadText').textContent='Đang tải dữ liệu dashboard...';
     await loadDashboard();

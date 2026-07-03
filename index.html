@@ -559,22 +559,22 @@ main{padding:24px 28px;max-width:1440px;margin:0 auto;}
 
 <script>
 // ╔══════════════════════════════════════════════════════════╗
-// ║  CONFIG — BẮT BUỘC PHẢI THAY 2 DÒNG DƯỚI ĐÂY          ║
-// ║  Lấy tại: Supabase → Settings → API                     ║
+// ║  CONFIG — URL cố định, key lưu trong trình duyệt        ║
 // ╚══════════════════════════════════════════════════════════╝
-// BƯỚC 1: Thay URL này bằng Project URL của bạn
-const SUPABASE_URL  = 'https://unrufjrijppssccacwkq.supabase.co';
-// BƯỚC 2: Thay key này bằng anon public key của bạn (chuỗi rất dài bắt đầu bằng eyJ...)
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVucnVmanJpanBwc3NjY2Fjd2txIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5MTE0NjUsImV4cCI6MjA5ODQ4NzQ2NX0.MONVuUNfEy_A5JScwkwnv0_52igp9YFE8u7TmABwpKA';
+const SUPABASE_URL = 'https://unrufjrijppssccacwkq.supabase.co';
+// Key được nhập 1 lần và lưu localStorage — không cần sửa file
+const SUPABASE_ANON = localStorage.getItem('ttcq_anon_key') || '';
 
 // Email được phép chỉnh sửa (khớp với SQL)
 const EDIT_ALLOWED = [
-  'ongtienonline@gmail.com',
+  'your.email@gmail.com',
   'colleague@gmail.com'
 ];
 // ════════════════════════════════════════════════════════════
 
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+// Key ưu tiên: localStorage > constant (constant sẽ là '' nếu chưa setup)
+const _ACTIVE_KEY = localStorage.getItem('ttcq_anon_key') || SUPABASE_ANON;
+const sb = supabase.createClient(SUPABASE_URL, _ACTIVE_KEY, {
   auth: { redirectTo: window.location.href }
 });
 
@@ -1313,36 +1313,75 @@ function showLoadError(msg){
   document.getElementById('loadErrorMsg').innerHTML=msg;
 }
 
-window.onload=async function(){
-  // Kiểm tra config còn placeholder không
-  if(SUPABASE_URL.includes('XXXXXXXXXXXX')||SUPABASE_URL.includes('YOUR_')){
-    showLoadError(
-      '<b>Chưa cấu hình Supabase!</b><br><br>'+
-      'Mở file HTML, tìm phần CONFIG và thay 2 dòng sau:<br><br>'+
-      '<code style="background:#0d1117;padding:8px;border-radius:6px;display:block;margin:6px 0;font-size:12px">'+
-      'const SUPABASE_URL = 'https://abc123.supabase.co'<br>'+
-      'const SUPABASE_ANON = 'eyJhbGci...'</code>'+
-      'Lấy giá trị tại: <b>Supabase → Settings → API</b>'
-    );
+// ── Setup screen: hiện lần đầu khi chưa có key ────────────────
+function showSetupScreen(){
+  document.getElementById('loadSpinner').style.display='none';
+  document.getElementById('loadText').style.display='none';
+  document.getElementById('loadError').style.display='block';
+  document.getElementById('loadErrorMsg').innerHTML=`
+    <b style="color:#ffab40;font-size:15px">🔑 Thiết lập lần đầu</b><br><br>
+    Dán <b>Anon Key</b> từ Supabase vào đây:<br>
+    <small style="color:#7d8590">Supabase → Settings → API → anon public → Copy</small><br><br>
+    <input id="setupKey" type="text"
+      placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      style="width:100%;background:#0d1117;border:1px solid #30363d;color:#f0f6fc;
+             padding:10px;border-radius:8px;font-family:monospace;font-size:12px;
+             margin:8px 0;box-sizing:border-box">
+    <br>
+    <button onclick="applySetupKey()"
+      style="background:#2dce89;color:#000;border:none;padding:10px 24px;
+             border-radius:8px;font-weight:800;font-size:14px;cursor:pointer;
+             margin-top:8px;width:100%">
+      ▶ Kết nối ngay
+    </button>
+    <div id="setupStatus" style="margin-top:10px;font-size:12px;color:#7d8590"></div>
+  `;
+}
+
+async function applySetupKey(){
+  const key = document.getElementById('setupKey').value.trim();
+  const status = document.getElementById('setupStatus');
+  if(!key || key.length < 50){
+    status.innerHTML='<span style="color:#ff5c57">❌ Key quá ngắn, kiểm tra lại</span>';
     return;
   }
-  if(SUPABASE_ANON.includes('YOUR_ANON_KEY')){
-    showLoadError('<b>Chưa điền anon key!</b><br>Lấy tại: Supabase → Settings → API → anon public');
+  status.innerHTML='<span style="color:#ffab40">⏳ Đang kiểm tra kết nối...</span>';
+  try {
+    const testSb = supabase.createClient(SUPABASE_URL, key);
+    const {error} = await testSb.from('ttcq_records').select('id').limit(1);
+    if(error) throw new Error(error.message);
+    // Lưu key vào localStorage
+    localStorage.setItem('ttcq_anon_key', key);
+    status.innerHTML='<span style="color:#2dce89">✓ Kết nối thành công! Đang tải...</span>';
+    // Reload để khởi động với key mới
+    setTimeout(()=>window.location.reload(), 800);
+  } catch(e) {
+    status.innerHTML='<span style="color:#ff5c57">❌ Lỗi: '+e.message+'</span>';
+  }
+}
+
+window.onload=async function(){
+  // Nếu chưa có key → hiện setup screen
+  const savedKey = localStorage.getItem('ttcq_anon_key');
+  if(!savedKey || savedKey.length < 50){
+    showSetupScreen();
     return;
   }
 
-  // Timeout 15 giây
+  // Có key → khởi động bình thường
   const timeout=setTimeout(()=>{
     showLoadError(
-      '<b>Kết nối quá thời gian (15s)</b><br><br>Kiểm tra:<br>'+
-      '• SUPABASE_URL và SUPABASE_ANON có đúng không?<br>'+
-      '• Mở F12 → Console xem lỗi chi tiết<br>'+
-      '• Supabase project có đang hoạt động không?'
+      '<b>Kết nối quá thời gian (15s)</b><br><br>'+
+      '<button onclick="localStorage.removeItem('ttcq_anon_key');location.reload()" '+
+      'style="background:#ff5c57;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:700">'+
+      '🔄 Nhập lại key</button>'
     );
   }, 15000);
 
   try {
     document.getElementById('loadText').textContent='Đang kiểm tra kết nối...';
+    // Khởi tạo Supabase với key từ localStorage
+    window._sb_override_key = savedKey;
     await initAuth();
     document.getElementById('loadText').textContent='Đang tải dữ liệu dashboard...';
     await loadDashboard();
@@ -1351,12 +1390,10 @@ window.onload=async function(){
   } catch(e) {
     clearTimeout(timeout);
     showLoadError(
-      '<b>Lỗi kết nối:</b><br><br>'+
-      (e.message||String(e))+'<br><br>'+
-      'Kiểm tra:<br>'+
-      '• URL và anon key có đúng không?<br>'+
-      '• Row Level Security đã cấu hình chưa?<br>'+
-      '• Mở F12 → Console để xem chi tiết'
+      '<b>Lỗi:</b> '+(e.message||String(e))+'<br><br>'+
+      '<button onclick="localStorage.removeItem('ttcq_anon_key');location.reload()" '+
+      'style="background:#ff5c57;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:700">'+
+      '🔄 Nhập lại key</button>'
     );
   }
 };

@@ -1373,10 +1373,10 @@ window.onload=async function(){
   // Có key → khởi động bình thường
   const timeout=setTimeout(()=>{
     showLoadError(
-      '<b>Kết nối quá thời gian (15s)</b><br><br>'+
-      '<button onclick="localStorage.removeItem('ttcq_anon_key');location.reload()" '+
-      'style="background:#ff5c57;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:700">'+
-      '🔄 Nhập lại key</button>'
+      `<b>Kết nối quá thời gian (15s)</b><br><br>
+      <button onclick="localStorage.removeItem('ttcq_anon_key');location.reload()"
+        style="background:#ff5c57;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:700">
+        🔄 Nhập lại key</button>`
     );
   }, 15000);
 
@@ -1391,10 +1391,10 @@ window.onload=async function(){
   } catch(e) {
     clearTimeout(timeout);
     showLoadError(
-      '<b>Lỗi:</b> '+(e.message||String(e))+'<br><br>'+
-      '<button onclick="localStorage.removeItem('ttcq_anon_key');location.reload()" '+
-      'style="background:#ff5c57;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:700">'+
-      '🔄 Nhập lại key</button>'
+      `<b>Lỗi:</b> ${e.message||String(e)}<br><br>
+      <button onclick="localStorage.removeItem('ttcq_anon_key');location.reload()"
+        style="background:#ff5c57;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:700">
+        🔄 Nhập lại key</button>`
     );
   }
 };

@@ -52,13 +52,13 @@ header{background:linear-gradient(135deg,#090f1e,#0c1a30 60%,#081420);
 .btn-refresh{background:linear-gradient(135deg,var(--accent),#00c48a);color:#000;border:none;padding:8px 16px;border-radius:8px;font-family:var(--font);font-weight:800;font-size:12px;cursor:pointer;}
 /* MAIN */
 main{padding:22px 24px;max-width:1440px;margin:0 auto;}
-.sec{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.4px;
+.sec{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;
   margin:0 0 14px 2px;display:flex;align-items:center;gap:8px;}
 .sec::after{content:'';flex:1;height:1px;background:var(--border);}
 /* KPI */
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px;margin-bottom:22px;}
 .kpi{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:18px 20px;
-  position:relative;overflow:hidden;transition:transform .2s;}
+  position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s,border-color .2s;}.kpi:hover{border-color:var(--border2);box-shadow:0 6px 24px #00000044;}
 .kpi:hover{transform:translateY(-2px);}
 .kpi::before{content:'';position:absolute;top:0;left:0;width:100%;height:3px;}
 .kpi.c1::before{background:linear-gradient(90deg,var(--accent),transparent);}
@@ -83,7 +83,7 @@ main{padding:22px 24px;max-width:1440px;margin:0 auto;}
 .row2b{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
 @media(max-width:1000px){.row2,.row2b{grid-template-columns:1fr 1fr;}}
 @media(max-width:640px){.row2,.row2b{grid-template-columns:1fr;}}
-.card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:20px 22px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:20px 22px;transition:border-color .2s;}.card:hover{border-color:var(--border2);}
 .card-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
 .card-title{font-size:14px;font-weight:700;}
 .card-sub{font-size:11px;color:var(--muted);margin-top:2px;}
@@ -116,7 +116,7 @@ main{padding:22px 24px;max-width:1440px;margin:0 auto;}
 .lutru-total{font-family:var(--mono);font-size:28px;font-weight:700;color:var(--accent5);text-align:center;margin:8px 0 2px;}
 .lutru-lbl{font-size:11px;color:var(--muted);text-align:center;text-transform:uppercase;margin-bottom:16px;}
 .lutru-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;}
-.lutru-item{background:var(--card2);border:1px solid var(--border);border-radius:9px;padding:12px;text-align:center;}
+.lutru-item{background:var(--card2);border:1px solid var(--border);border-radius:9px;padding:12px;text-align:center;transition:transform .2s,border-color .2s;}.lutru-item:hover{transform:translateY(-2px);border-color:var(--border2);}
 .lutru-name{font-size:12px;font-weight:700;margin-bottom:5px;}
 .lutru-days{font-family:var(--mono);font-size:20px;font-weight:700;}
 .lutru-unit{font-size:10px;color:var(--muted);margin-top:2px;}
@@ -489,7 +489,6 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 // Email được phép chỉnh sửa (thêm/xóa email tùy ý)
 const EDIT_ALLOWED = [
   'ongtienonline@gmail.com',
-  'truongtrandn2025@gmail.com',
 ];
 // ═══════════════════════════════════════════════════════════════
 
@@ -701,17 +700,17 @@ function renderThang(type){
   const datasets=years.map((y,yi)=>{
     const col=YC[yi%YC.length],arr=Array(12).fill(null);
     MONTHS.filter(m=>m.nam===y).forEach(m=>arr[m.thang_so-1]=+m.tong_km);
-    return{label:String(y),data:arr,backgroundColor:hexA(col,type==='line'?0:.75),borderColor:col,
+    return{label:String(y),data:arr,backgroundColor:hexA(col,type==='line'?0:.82),borderColor:col,
       borderWidth:type==='line'?2:0,borderRadius:type==='bar'?5:0,
       tension:.4,fill:false,pointBackgroundColor:col,pointRadius:type==='line'?4:0,spanGaps:false};
   });
   const plugin=lp({mode:type==='bar'?'bar-inside':'line-above',color:(v,i,ds)=>type!=='bar'?ds.borderColor:'#f0f6fcbb',fmt:v=>v!=null&&v>0?fmt(v):'',size:9,gap:10});
   charts.th=new Chart(ctx,{type:type==='line'?'line':'bar',data:{labels:labs,datasets},
     options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:type==='line'?22:6}},
-      plugins:{legend:{display:true,position:'top',labels:{color:'#c9d1d9',font:{size:11},boxWidth:10,boxHeight:10,padding:12}},
+      plugins:{legend:{display:true,position:'top',labels:{color:'#e6edf3',font:{size:11},boxWidth:10,boxHeight:10,padding:12}},
         tooltip:{callbacks:{label:c=>`  ${c.dataset.label}: ${c.parsed.y!=null?fmt(c.parsed.y)+' km':'—'}`}}},
-      scales:{x:{grid:{color:'#30363d55'},ticks:{color:'#7d8590',font:{size:10}}},
-              y:{grid:{color:'#30363d55'},ticks:{color:'#7d8590',font:{size:10},callback:v=>fmt(v)}}}},plugins:[plugin]});
+      scales:{x:{grid:{color:'#30363d77'},ticks:{color:'#8b949e',font:{size:10}}},
+              y:{grid:{color:'#30363d77'},ticks:{color:'#8b949e',font:{size:10},callback:v=>fmt(v)}}}},plugins:[plugin]});
 }
 
 function renderTop(ms,tag){
@@ -745,15 +744,15 @@ function renderLuTru(y){
   const datasets=dms.map((dm,idx)=>{
     const c=dc[dm]||PAL[idx%PAL.length];
     return{label:dm,data:years.map(yr=>{const r=LUTRU.find(x=>x.nam===yr&&x.dia_diem===dm);return r?+r.so_ngay:0;}),
-      backgroundColor:hexA(c,.78),borderRadius:3,borderWidth:0,stack:'s',_c:c};
+      backgroundColor:hexA(c,.85),borderRadius:3,borderWidth:0,stack:'s',_c:c};
   });
   const plugins=datasets.map(ds=>lp({mode:'stk',color:'#fff',cTop:ds._c,fmt:v=>v>0?`${v} ngày`:'',size:10}));
   charts.lu=new Chart(ctx,{type:'bar',data:{labels:years,datasets},
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{labels:{color:'#c9d1d9',font:{size:11},boxWidth:10,boxHeight:10,usePointStyle:true,pointStyle:'circle',padding:10}},
+      plugins:{legend:{labels:{color:'#e6edf3',font:{size:11},boxWidth:10,boxHeight:10,usePointStyle:true,pointStyle:'circle',padding:10}},
         tooltip:{callbacks:{label:c=>`  ${c.dataset.label}: ${c.parsed.y} ngày`}}},
-      scales:{x:{grid:{color:'#30363d55'},ticks:{color:'#7d8590'},stacked:true},
-              y:{grid:{color:'#30363d55'},ticks:{color:'#7d8590',callback:v=>v+' ngày'},stacked:true}}},plugins});
+      scales:{x:{grid:{color:'#30363d77'},ticks:{color:'#8b949e'},stacked:true},
+              y:{grid:{color:'#30363d77'},ticks:{color:'#8b949e',callback:v=>v+' ngày'},stacked:true}}},plugins});
 }
 
 function renderNam(){
@@ -778,8 +777,8 @@ function renderNam(){
           strokeStyle:i===0?hexA(PAL[1],.72):'#ffab40',color:'#f0f6fc',pointStyle:i===0?'rectRounded':'circle',hidden:false,datasetIndex:i}));},
         boxWidth:12,boxHeight:12,padding:16}},
         tooltip:{callbacks:{label:c=>c.dataset.label==='Tổng km'?' '+fmt(c.parsed.y)+' km':' '+fmt(c.parsed.y)+' chuyến'}}},
-      scales:{x:{grid:{color:'#30363d55'},ticks:{color:'#7d8590'}},
-        y:{grid:{color:'#30363d55'},ticks:{color:PAL[1],font:{size:10},callback:v=>fmt(v)},position:'left'},
+      scales:{x:{grid:{color:'#30363d77'},ticks:{color:'#8b949e'}},
+        y:{grid:{color:'#30363d77'},ticks:{color:PAL[1],font:{size:10},callback:v=>fmt(v)},position:'left'},
         y1:{grid:{drawOnChartArea:false},ticks:{color:'#ffab40',font:{size:10}},position:'right'}}},
     plugins:[lpKm,lpCh]});
 }
@@ -790,17 +789,37 @@ function renderTrung(){
   const years=Object.keys(YEARS).sort();
   const tbv=years.map(y=>YEARS[y].km/(YEARS[y].nThang||1));
   const kpv=years.map(y=>YEARS[y].chuyen>0?YEARS[y].km/YEARS[y].chuyen:0);
-  const lpTB=lp({mode:'bar-inside',color:(v,i,ds)=>v===Math.max(...ds.data)?'#000c':'#f0f6fccc',fmt:v=>v>0?fmt(v,0)+' km/th':'',size:9});
-  const lpKP=lp({mode:'line-above',color:'#ffab40',fmt:v=>v>0?fmt(v,1)+' km/ch':'',size:9,gap:12});
+  // Label giống renderNam: km/tháng trong lòng cột, km/chuyến trên chấm
+  const lpTB=lp({mode:'bar-inside',color:'#f0f6fccc',fmt:v=>v>0?fmt(v,0)+' km':'',size:10});
+  const lpKP={id:'kpLabel',afterDatasetsDraw(chart){
+    const ctx=chart.ctx,meta=chart.getDatasetMeta(1);if(!meta||meta.hidden)return;
+    meta.data.forEach((el,i)=>{const v=kpv[i];if(!v)return;
+      ctx.save();ctx.font='bold 10px JetBrains Mono,monospace';ctx.fillStyle='#ffab40';
+      ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(fmt(v,1)+' km',el.x,el.y-14);ctx.restore();});
+  }};
   charts.trung=new Chart(ctx,{type:'bar',data:{labels:years,datasets:[
-    {label:'Km/tháng',data:tbv,backgroundColor:years.map((_,i)=>hexA(PAL[i%PAL.length],.78)),borderRadius:6,borderWidth:0,yAxisID:'y',order:2},
-    {label:'Km/chuyến',data:kpv,type:'line',tension:.4,borderColor:'#ffab40',backgroundColor:'transparent',
-      pointBackgroundColor:'#ffab40',pointRadius:5,borderWidth:2,yAxisID:'y1',order:1}]},
-    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24}},
-      plugins:{legend:{labels:{color:'#c9d1d9',font:{size:11},boxWidth:10,boxHeight:10,usePointStyle:true,pointStyle:'circle',padding:10}},
-        tooltip:{callbacks:{label:c=>c.dataset.label==='Km/tháng'?' '+fmt(c.parsed.y,1)+' km/tháng':' '+fmt(c.parsed.y,1)+' km/chuyến'}}},
-      scales:{x:{grid:{color:'#30363d55'},ticks:{color:'#7d8590'}},
-        y:{grid:{color:'#30363d55'},ticks:{color:'#7d8590',font:{size:10},callback:v=>fmt(v)},position:'left'},
+    {label:'TB km/tháng',data:tbv,
+     backgroundColor:hexA(PAL[4],.75),borderRadius:6,borderWidth:0,yAxisID:'y',order:2},
+    {label:'TB km/chuyến',data:kpv,type:'line',tension:.4,
+     borderColor:'#ffab40',backgroundColor:'transparent',
+     pointBackgroundColor:'#ffab40',pointRadius:7,pointStyle:'circle',borderWidth:2.5,yAxisID:'y1',order:1}]},
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:34,bottom:4}},
+      plugins:{
+        legend:{position:'bottom',align:'center',labels:{
+          color:'#f0f6fc',font:{size:11},usePointStyle:true,
+          generateLabels(c){return c.data.datasets.map((ds,i)=>({
+            text:ds.label,
+            fillStyle:i===0?hexA(PAL[4],.75):'#ffab40',
+            strokeStyle:i===0?hexA(PAL[4],.75):'#ffab40',
+            color:'#f0f6fc',
+            pointStyle:i===0?'rectRounded':'circle',
+            hidden:false,datasetIndex:i}));},
+          boxWidth:12,boxHeight:12,padding:16}},
+        tooltip:{callbacks:{label:c=>c.dataset.label.includes('tháng')
+          ?' '+fmt(c.parsed.y,1)+' km/tháng'
+          :' '+fmt(c.parsed.y,1)+' km/chuyến'}}},
+      scales:{x:{grid:{color:'#30363d77'},ticks:{color:'#8b949e'}},
+        y:{grid:{color:'#30363d77'},ticks:{color:PAL[4],font:{size:10},callback:v=>fmt(v)},position:'left'},
         y1:{grid:{drawOnChartArea:false},ticks:{color:'#ffab40',font:{size:10}},position:'right'}}},
     plugins:[lpTB,lpKP]});
 }
@@ -817,10 +836,10 @@ async function renderLoai(){
   charts.loai=new Chart(ctx,{type,data:{labels,datasets:[{label:'Chuyến',data:vals,backgroundColor:bg,
     borderColor:isR?'#1c2333':bg,borderWidth:isR?2:0,borderRadius:isR?0:5,cutout:type==='doughnut'?'60%':undefined}]},
     options:{responsive:true,maintainAspectRatio:false,layout:{padding:isR?{right:90,left:20}:{top:24}},
-      plugins:{legend:{display:isR,position:'right',labels:{color:'#c9d1d9',font:{size:11},usePointStyle:true,pointStyle:'circle',boxWidth:10,boxHeight:10,padding:9}},
+      plugins:{legend:{display:isR,position:'right',labels:{color:'#e6edf3',font:{size:11},usePointStyle:true,pointStyle:'circle',boxWidth:10,boxHeight:10,padding:9}},
         tooltip:{callbacks:{label:c=>' '+(c.parsed||c.raw)+' chuyến'}}},
-      scales:isR?{}:{x:{grid:{color:'#30363d55'},ticks:{color:'#7d8590',font:{size:10}}},
-                     y:{grid:{color:'#30363d55'},ticks:{color:'#7d8590',font:{size:10}}}}},plugins});
+      scales:isR?{}:{x:{grid:{color:'#30363d77'},ticks:{color:'#8b949e',font:{size:10}}},
+                     y:{grid:{color:'#30363d77'},ticks:{color:'#8b949e',font:{size:10}}}}},plugins});
 }
 
 function switchThang(t){thangType=t;document.getElementById('tb-bar').classList.toggle('on',t==='bar');document.getElementById('tb-line').classList.toggle('on',t==='line');renderThang(t);}
@@ -1073,4 +1092,3 @@ async function confirmDelete(){
 </script>
 </body>
 </html>
-

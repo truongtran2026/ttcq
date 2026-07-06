@@ -16,7 +16,7 @@ export async function loadRefData(sb) {
   const diemMap = new Map((diem.data || []).map(r => [r.id, r]));
   const doanTuyenMap = new Map((doan.data || []).map(r => [r.id, r]));
   const loTrinhMap = new Map((loTrinh.data || []).map(r => [r.id, r]));
-  const kmByLoTrinh = new Map((kmView.data || []).map(r => [r.lo_trinh_id ?? r.id, +r.tong_km]));
+  const kmByLoTrinh = new Map((kmView.data || []).map(r => [r.lo_trinh_id ?? r.id, +r.km_tong]));
   const tenByDoanTuyen = new Map((tenView.data || []).map(r => [r.doan_tuyen_id ?? r.id, r]));
 
   cache = {

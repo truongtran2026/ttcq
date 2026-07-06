@@ -3,7 +3,7 @@ import { getRefData, tenDoanTuyen } from '../api/refDataApi.js';
 import { computeLoTrinhKm, computeDoanLeKm } from '../utils/kmCalculator.js';
 import { toIso, toVi, presetRange, monthRangeOfIso } from '../utils/dateUtils.js';
 import { fmt } from '../utils/format.js';
-import { renderRecordsTable } from '../components/table.js';
+import { renderRecordsTable, renderRecordsCards } from '../components/table.js';
 import { renderPager } from '../components/pagination.js';
 import { openOverlay, closeOverlay, wireOverlayBackdropClose } from '../components/modal.js';
 import { showToast } from '../components/toast.js';
@@ -152,11 +152,13 @@ function renderTable() {
   const start = (CUR_PAGE - 1) * eff;
   const pageRows = FILTERED.slice(start, start + eff);
   document.getElementById('pgInfo').textContent = `${total === 0 ? 0 : start + 1}–${Math.min(start + eff, total)} / ${total} dòng`;
-  renderRecordsTable(document.getElementById('dtblBody'), pageRows, getRefData(), {
+  const handlers = {
     onEdit: (id) => openModal('edit', id),
     onDup: (id, ngay) => doDup(id, ngay),
     onDel: (id, ngay) => askDel(id, ngay),
-  });
+  };
+  renderRecordsTable(document.getElementById('dtblBody'), pageRows, getRefData(), handlers);
+  renderRecordsCards(document.getElementById('dtblCards'), pageRows, getRefData(), handlers);
   renderPager(document.getElementById('pgBtns'), { page: CUR_PAGE, pages, onChange: (p) => { CUR_PAGE = p; renderTable(); } });
 }
 

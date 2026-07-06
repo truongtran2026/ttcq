@@ -6,7 +6,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="TTCQ">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#4f46e5">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<link rel="icon" href="./icons/icon-192.png">
 <title>Thống kê Tuần tra Cáp quang</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -23,6 +27,8 @@ body.view-only .view-edit-only{display:none!important}
 .spill.on{background:#4a9eff;border-color:#4a9eff;color:#fff;font-weight:700}
 .tbtn.on{background:#4f46e5;color:#fff;border-color:#4f46e5}
 .tab-btn.active{background:#4f46e5;color:#fff}
+/* Tranh Safari/Chrome tren dien thoai tu dong zoom khi bam vao o nhap co chu <16px */
+@media (max-width:640px){ input, select, textarea { font-size:16px!important; } }
 </style>
 </head>
 <body class="view-only bg-slate-50 text-slate-900">
@@ -175,15 +181,18 @@ body.view-only .view-edit-only{display:none!important}
     <button id="btnAdd" class="view-edit-only bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold text-xs hover:bg-indigo-700 transition-colors whitespace-nowrap">＋ Thêm chuyến mới</button>
   </div>
   <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-    <table class="w-full text-xs">
-      <thead><tr class="bg-slate-50 text-[10px] uppercase tracking-wide text-slate-500">
-        <th class="px-3 py-2.5 text-left font-bold">Ngày</th><th class="px-3 py-2.5 text-left font-bold">Loại nhập</th>
-        <th class="px-3 py-2.5 text-left font-bold">Chi tiết</th>
-        <th class="px-3 py-2.5 text-left font-bold">∑ Km</th><th class="px-3 py-2.5 text-left font-bold">Lưu trú</th><th class="px-3 py-2.5 text-left font-bold">Ghi chú</th>
-        <th class="px-3 py-2.5 text-center font-bold">Thao tác</th>
-      </tr></thead>
-      <tbody id="dtblBody"></tbody>
-    </table>
+    <div class="hidden sm:block overflow-x-auto">
+      <table class="w-full text-xs">
+        <thead><tr class="bg-slate-50 text-[10px] uppercase tracking-wide text-slate-500">
+          <th class="px-3 py-2.5 text-left font-bold">Ngày</th><th class="px-3 py-2.5 text-left font-bold">Loại nhập</th>
+          <th class="px-3 py-2.5 text-left font-bold">Chi tiết</th>
+          <th class="px-3 py-2.5 text-left font-bold">∑ Km</th><th class="px-3 py-2.5 text-left font-bold">Lưu trú</th><th class="px-3 py-2.5 text-left font-bold">Ghi chú</th>
+          <th class="px-3 py-2.5 text-center font-bold">Thao tác</th>
+        </tr></thead>
+        <tbody id="dtblBody"></tbody>
+      </table>
+    </div>
+    <div id="dtblCards" class="sm:hidden divide-y divide-slate-100"></div>
     <div class="flex items-center justify-between px-4 py-3 border-t border-slate-200 flex-wrap gap-2">
       <div class="flex items-center gap-2">
         <span id="pgInfo" class="text-xs text-slate-400">—</span>

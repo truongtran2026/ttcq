@@ -14,6 +14,16 @@ function chiTietHtml(r, refData) {
 
 const ACTION_BTN = 'view-edit-only border-none px-2 py-1 rounded-md text-xs font-semibold cursor-pointer';
 
+function wireActionDelegation(container, handlers) {
+  container.onclick = function (e) {
+    const btn = e.target.closest('button[data-act]'); if (!btn) return;
+    const id = btn.getAttribute('data-id'), act = btn.getAttribute('data-act'), ngay = btn.getAttribute('data-ngay') || '';
+    if (act === 'edit') handlers.onEdit(id);
+    else if (act === 'dup') handlers.onDup(id, ngay);
+    else if (act === 'del') handlers.onDel(id, ngay);
+  };
+}
+
 export function renderRecordsTable(tbody, rows, refData, handlers) {
   const D = '<span class="text-slate-300">—</span>';
   tbody.innerHTML = rows.map(r => `<tr class="hover:bg-slate-50">
@@ -29,11 +39,29 @@ export function renderRecordsTable(tbody, rows, refData, handlers) {
       <button class="${ACTION_BTN} bg-red-50 text-red-600"     data-id="${r.id}" data-ngay="${r.ngay}" data-act="del">🗑</button>
     </div></td></tr>`).join('');
 
-  tbody.onclick = function (e) {
-    const btn = e.target.closest('button[data-act]'); if (!btn) return;
-    const id = btn.getAttribute('data-id'), act = btn.getAttribute('data-act'), ngay = btn.getAttribute('data-ngay') || '';
-    if (act === 'edit') handlers.onEdit(id);
-    else if (act === 'dup') handlers.onDup(id, ngay);
-    else if (act === 'del') handlers.onDel(id, ngay);
-  };
+  wireActionDelegation(tbody, handlers);
+}
+
+// Dang the (card) xep chong cho man hinh nho — cung du lieu/handlers nhu renderRecordsTable,
+// chi khac cach trinh bay va nut thao tac to hon de de bam tren dien thoai.
+export function renderRecordsCards(container, rows, refData, handlers) {
+  container.innerHTML = rows.map(r => `<div class="p-4">
+    <div class="flex items-center justify-between mb-2">
+      <span class="font-mono text-sm font-semibold text-indigo-600">${toVi(r.ngay)}</span>
+      ${loaiNhapBadgeHtml(r.loai_nhap)}
+    </div>
+    <div class="text-sm text-slate-700 mb-2">${chiTietHtml(r, refData)}</div>
+    <div class="flex items-center gap-3 text-xs text-slate-500 mb-2 flex-wrap">
+      <span>📏 ${r.km_snapshot ? fmt(+r.km_snapshot, 1) + ' km' : '—'}</span>
+      ${r.lu_tru ? `<span>🏠 ${r.lu_tru}</span>` : ''}
+    </div>
+    ${r.ghi_chu ? `<div class="text-xs text-slate-400 mb-2">${r.ghi_chu}</div>` : ''}
+    <div class="view-edit-only flex gap-2 mt-1">
+      <button class="flex-1 bg-indigo-50 text-indigo-600 border-none py-2 rounded-lg text-xs font-semibold" data-id="${r.id}" data-act="edit">✏️ Sửa</button>
+      <button class="flex-1 bg-amber-50 text-amber-600 border-none py-2 rounded-lg text-xs font-semibold" data-id="${r.id}" data-ngay="${r.ngay}" data-act="dup">⧉ Sao chép</button>
+      <button class="flex-1 bg-red-50 text-red-600 border-none py-2 rounded-lg text-xs font-semibold" data-id="${r.id}" data-ngay="${r.ngay}" data-act="del">🗑 Xóa</button>
+    </div>
+  </div>`).join('');
+
+  wireActionDelegation(container, handlers);
 }

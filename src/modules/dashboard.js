@@ -1,4 +1,5 @@
 import { listAllRecordsForStats } from '../api/recordsApi.js';
+import { getRefData } from '../api/refDataApi.js';
 import { groupByMonth, groupByYear, groupByLoaiTuyen, groupByLuuTru, MONTHS_LABEL } from '../utils/statsUtils.js';
 import { fmt, hexA, PAL, YC, CHART_GRID, CHART_TICK, lp, dpLp } from '../utils/chartHelpers.js';
 import { rankClass } from '../components/badge.js';
@@ -21,7 +22,7 @@ export async function reload() {
   MONTHS = groupByMonth(records);
   YEARS = groupByYear(MONTHS);
   LUTRU = groupByLuuTru(records);
-  LOAI_STATS = groupByLoaiTuyen(records);
+  LOAI_STATS = groupByLoaiTuyen(records, getRefData());
 
   const years = [...new Set(MONTHS.map(m => m.nam))].sort();
   const sel = document.getElementById('yearFilter');
@@ -189,12 +190,12 @@ function renderTrung() {
   const years = Object.keys(YEARS).sort();
   const tbv = years.map(y => YEARS[y].km / (YEARS[y].nThang || 1));
   const kpv = years.map(y => YEARS[y].chuyen > 0 ? YEARS[y].km / YEARS[y].chuyen : 0);
-  const lpTB = lp({ mode: 'bar-inside', color: '#ffffffcc', fmt: v => v > 0 ? fmt(v, 0) + ' km' : '', size: 10 });
+  const lpTB = lp({ mode: 'bar-inside', color: '#ffffffcc', fmt: v => v > 0 ? fmt(v, 0) + ' km/tháng' : '', size: 10 });
   const lpKP = { id: 'kpLabel', afterDatasetsDraw(chart) {
     const ctx = chart.ctx, meta = chart.getDatasetMeta(1); if (!meta || meta.hidden) return;
     meta.data.forEach((el, i) => { const v = kpv[i]; if (!v) return;
       ctx.save(); ctx.font = 'bold 10px JetBrains Mono,monospace'; ctx.fillStyle = '#ffab40';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText(fmt(v, 1) + ' km', el.x, el.y - 14); ctx.restore(); });
+      ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText(fmt(v, 1) + ' km/chuyến', el.x, el.y - 14); ctx.restore(); });
   } };
   charts.trung = new Chart(ctx, { type: 'bar', data: { labels: years, datasets: [
     { label: 'TB km/tháng', data: tbv, backgroundColor: hexA(PAL[4], .75), borderRadius: 6, borderWidth: 0, yAxisID: 'y', order: 2 },

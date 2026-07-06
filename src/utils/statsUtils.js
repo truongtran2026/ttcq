@@ -38,13 +38,20 @@ export function topMonths(months, n = 5) {
   return [...months].sort((a, b) => b.tong_km - a.tong_km).slice(0, n);
 }
 
-// lo_trinh -> luôn bucket 'ĐHCM'; doan_le -> mỗi loai_tuyen khác nhau xuất hiện trong record (dedup trong cùng record) +1.
-export function groupByLoaiTuyen(records) {
+// Phân loại theo loai_tuyen của TỪNG ĐOẠN cấu thành chuyến đi (dedup trong cùng record) —
+// áp dụng như nhau cho cả lo_trinh (tra qua lo_trinh.doan_ids) lẫn doan_le (tra qua ttcq_records_doan_le),
+// KHÔNG gán cứng 'ĐHCM' cho lo_trinh nữa vì 1 lộ trình có thể đi qua nhiều loại đoạn khác nhau (vd Nội thị, đường biển).
+export function groupByLoaiTuyen(records, refData) {
   const counts = new Map();
-  const bump = (loai) => counts.set(loai, (counts.get(loai) || 0) + 1);
+  const bump = (loai) => { if (loai) counts.set(loai, (counts.get(loai) || 0) + 1); };
   records.forEach(r => {
-    if (r.loai_nhap === 'lo_trinh') { bump('ĐHCM'); return; }
-    const loaiSet = new Set((r.ttcq_records_doan_le || []).map(d => d.doan_tuyen?.loai_tuyen).filter(Boolean));
+    let doanTuyenIds;
+    if (r.loai_nhap === 'lo_trinh') {
+      doanTuyenIds = refData.loTrinhMap.get(r.lo_trinh_id)?.doan_ids || [];
+    } else {
+      doanTuyenIds = (r.ttcq_records_doan_le || []).map(d => d.doan_tuyen_id);
+    }
+    const loaiSet = new Set(doanTuyenIds.map(id => refData.doanTuyenMap.get(id)?.loai_tuyen).filter(Boolean));
     loaiSet.forEach(bump);
   });
   return [...counts.entries()].map(([loai_tuyen, so_chuyen]) => ({ loai_tuyen, so_chuyen }));

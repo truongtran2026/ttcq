@@ -39,9 +39,14 @@ export function getRefData() {
 }
 
 export function tenDoanTuyen(doanTuyenId) {
+  const d = getRefData().doanTuyenMap.get(doanTuyenId);
+  // Doan tu-quay-ve cung 1 diem (self-loop, vd "Noi thi" id=16) -> hien loai_tuyen
+  // thay vi ghep "DiemA-DiemA" trung lap vo nghia.
+  if (d && d.diem_dau_id === d.diem_cuoi_id) {
+    return d.loai_tuyen || `#${doanTuyenId}`;
+  }
   const t = getRefData().tenByDoanTuyen.get(doanTuyenId);
   if (t) return t.ten_thuan || t.ten_nguoc || `#${doanTuyenId}`;
-  const d = getRefData().doanTuyenMap.get(doanTuyenId);
   if (!d) return `#${doanTuyenId}`;
   const a = getRefData().diemMap.get(d.diem_dau_id)?.ten_diem || '?';
   const b = getRefData().diemMap.get(d.diem_cuoi_id)?.ten_diem || '?';

@@ -66,6 +66,19 @@ ttcq_records_doan_le (bang con — chuan hoa 1NF thay the 4 cot tuyen1-4 cu)
 **Bảng cũ (giữ song song làm backup/rollback, theo nguyên tắc expand-contract migration):**
 `tuyen_list`, `lod_trinh_list`, `lu_tru_list` — KHÔNG xóa cho đến khi xác nhận toàn bộ ứng dụng đã chuyển hẳn sang schema mới và chạy ổn định qua ít nhất 1-2 chu kỳ nhập liệu thực tế.
 
+## 2b. Phân quyền người dùng — bảng `app_users` (thay whitelist hardcode)
+
+```
+app_users (1 dong / tai khoan auth.users)
+  user_id uuid PK -> auth.users.id (CASCADE), email text, role text CHECK IN ('none','editor','admin'), created_at
+  -- Tu dong co dong khi dang ky lan dau (trigger on_auth_user_created tren auth.users), mac dinh role='none'
+
+is_admin() / can_edit()  -- 2 ham SQL security definer, tra app_users theo auth.uid(), dung trong moi RLS policy
+                            can_edit() ap cho policy ghi tren ttcq_records va ttcq_records_doan_le (thay auth.email()=... hardcode)
+                            is_admin() ap cho policy sua app_users.role
+```
+Đăng nhập hỗ trợ cả Google OAuth lẫn email/mật khẩu (Supabase Auth built-in `signUp`/`signInWithPassword`). Cấp/thu quyền `editor`/`admin` làm ngay trong tab "⚙️ Quản lý" (chỉ admin thấy) — không cần sửa code/deploy lại nữa. Admin đầu tiên phải gán bằng 1 câu `UPDATE app_users SET role='admin' WHERE email=...` chạy tay 1 lần duy nhất sau khi tài khoản đó đã đăng nhập ít nhất 1 lần.
+
 ## 3. Index hiệu năng
 
 ```sql
@@ -120,4 +133,7 @@ KHÔNG bọc thêm thư mục `/ttcq-app` như bản vẽ trước đây — `in
 | 2026-07-06 | Migration dữ liệu thật hoàn tất: 209/209 bản ghi map đúng `lo_trinh_id`/`doan_le`, `km_snapshot` không còn NULL | Xác minh qua truy vấn kiểm tra, 0 dòng lỗi |
 | 2026-07-06 | Frontend module hóa (ES Modules native) + đổi CSS sang Tailwind CDN + chuyển hẳn sang đọc/ghi schema graph model mới | `index.html` trước đó vẫn 1 file monolith, dark-theme tự viết, còn query schema cũ (`tuyen_list`, `lod_trinh_list`, `v_thong_ke_*`, `get_loai_stats`) dù DB đã migrate xong từ 2026-07-05/06 |
 | 2026-07-06 | Bỏ `v_thong_ke_thang`/`v_thong_ke_nam`/`v_lu_tru_nam`/`get_loai_stats` phía frontend, tự tính thống kê client-side trong `src/utils/statsUtils.js` | Dữ liệu quá nhỏ (~209 dòng) để cần view SQL; tự kiểm soát đúng quy tắc dedup-theo-ngày/km_snapshot mà không phụ thuộc view có thể chưa cập nhật theo schema mới. Bảng/view cũ vẫn giữ nguyên ở Supabase, chỉ ngừng gọi từ frontend |
-| 2026-07-06 | Phân loại "loại tuyến" cho record `doan_le`: lấy theo `loai_tuyen` của từng đoạn đã chọn (dedup trong cùng record); record `lo_trinh` luôn `'ĐHCM'` | Suy luận lại khi không có source code RPC `get_loai_stats` cũ — **cần đối chiếu số liệu thực tế**, sửa tại `statsUtils.groupByLoaiTuyen` nếu sai |
+| 2026-07-06 | Phân loại "loại tuyến": tra `loai_tuyen` của TỪNG ĐOẠN cấu thành chuyến đi (dedup trong record) — áp dụng như nhau cho `lo_trinh` (qua `lo_trinh.doan_ids`) và `doan_le`, KHÔNG gán cứng `'ĐHCM'` cho lo_trinh nữa | Bản đầu gán cứng ĐHCM cho lo_trinh sai theo phản hồi thực tế (thiếu Nội thị/đường biển) — sửa tại `statsUtils.groupByLoaiTuyen` |
+| 2026-07-06 | Thêm PWA (`manifest.json` + icon), KHÔNG dùng Service Worker; bảng dữ liệu thêm chế độ card cho mobile (`renderRecordsCards`) | Cho phép "Thêm vào màn hình chính"; Service Worker cấu hình sai sẽ làm nặng thêm vấn đề cache trình duyệt vừa gặp; bảng 7 cột không dùng được trên điện thoại |
+| 2026-07-07 | Sửa `refDataApi` đọc đúng cột `km_tong` của `v_lo_trinh_km` (trước đó code giả định nhầm là `tong_km`) | Xác nhận qua dữ liệu thật do người dùng cung cấp; các bản ghi lo_trinh tạo trong lúc bug còn tồn tại cần tự sửa lại (mở Sửa rồi Lưu, hoặc chạy UPDATE quét theo km_snapshot=0) |
+| 2026-07-07 | Bỏ whitelist `EDIT_ALLOWED` hardcode, chuyển sang bảng `app_users` (role none/editor/admin) quản lý qua tab "⚙️ Quản lý"; thêm đăng nhập email/mật khẩu song song Google OAuth | Người dùng muốn tự cấp/thu quyền qua UI, không sửa code mỗi lần đổi người; xem chi tiết schema mục 2b |

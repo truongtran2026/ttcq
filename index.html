@@ -48,7 +48,8 @@ body.view-only .view-edit-only{display:none!important}
   <span>👤</span>
   <span id="authEmail" class="text-slate-900 font-medium">Chưa đăng nhập</span>
   <span id="authBadge" class="rounded-full px-2.5 py-0.5 text-xs font-medium bg-slate-100 text-slate-500">👁 Chỉ xem</span>
-  <button id="btnLogin" class="ml-auto bg-indigo-600 text-white px-4 py-1.5 rounded-lg font-semibold text-xs hover:bg-indigo-700 transition-colors">Đăng nhập với Google</button>
+  <button id="btnLoginEmail" class="ml-auto bg-slate-100 text-slate-700 px-4 py-1.5 rounded-lg font-semibold text-xs hover:bg-slate-200 transition-colors">Đăng nhập bằng Email</button>
+  <button id="btnLogin" class="bg-indigo-600 text-white px-4 py-1.5 rounded-lg font-semibold text-xs hover:bg-indigo-700 transition-colors">Đăng nhập với Google</button>
 </div>
 
 <header class="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between sticky top-0 z-30 gap-4 flex-wrap">
@@ -61,6 +62,7 @@ body.view-only .view-edit-only{display:none!important}
     <div class="flex gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
       <button id="tabDash" class="tab-btn active px-4 py-1.5 rounded-md text-sm font-semibold text-slate-500">📊 Dashboard</button>
       <button id="tabData" class="tab-btn px-4 py-1.5 rounded-md text-sm font-semibold text-slate-500">🗂️ Tổng hợp dữ liệu</button>
+      <button id="tabAdmin" class="tab-btn px-4 py-1.5 rounded-md text-sm font-semibold text-slate-500" style="display:none">⚙️ Quản lý</button>
     </div>
   </div>
   <div class="flex gap-2 items-center">
@@ -205,6 +207,49 @@ body.view-only .view-edit-only{display:none!important}
     </div>
   </div>
 </main>
+</div>
+
+<!-- QUAN LY NGUOI DUNG (chi admin) -->
+<div id="pageAdmin" style="display:none">
+<main class="p-6 max-w-[900px] mx-auto">
+  <div class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">Quản lý người dùng</div>
+  <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <table class="w-full text-xs">
+      <thead><tr class="bg-slate-50 text-[10px] uppercase tracking-wide text-slate-500">
+        <th class="px-3 py-2.5 text-left font-bold">Email</th>
+        <th class="px-3 py-2.5 text-left font-bold">Ngày tạo</th>
+        <th class="px-3 py-2.5 text-left font-bold">Vai trò</th>
+        <th class="px-3 py-2.5 text-center font-bold">Thao tác</th>
+      </tr></thead>
+      <tbody id="adminUsersBody"></tbody>
+    </table>
+  </div>
+</main>
+</div>
+
+<!-- MODAL DANG NHAP / DANG KY BANG EMAIL -->
+<div class="overlay fixed inset-0 bg-black/70 z-[500] items-center justify-center p-5" id="authOv">
+  <div class="bg-white rounded-2xl w-full max-w-[380px] shadow-2xl">
+    <div class="px-5 pt-4 pb-3.5 flex items-center justify-between border-b border-slate-200">
+      <div id="authModalTitle" class="text-base font-extrabold">Đăng nhập</div>
+      <button data-close="authOv" class="text-slate-400 text-xl hover:text-slate-600">✕</button>
+    </div>
+    <div class="p-5">
+      <div class="flex flex-col gap-1 mb-3">
+        <label class="text-[10px] font-bold text-slate-400 uppercase">Email</label>
+        <input type="email" id="authEmailInput" class="border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-bold text-slate-400 uppercase">Mật khẩu</label>
+        <input type="password" id="authPasswordInput" class="border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div id="authMsg" class="text-xs mt-2"></div>
+    </div>
+    <div class="px-5 pb-4 flex items-center justify-between gap-2">
+      <button id="btnToggleAuthMode" class="text-xs text-indigo-600 font-semibold hover:underline">Chưa có tài khoản? Đăng ký</button>
+      <button id="btnAuthSubmit" class="bg-indigo-600 text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-indigo-700 whitespace-nowrap">Đăng nhập</button>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL NHẬP LIỆU -->

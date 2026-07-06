@@ -22,25 +22,33 @@ Người yêu cầu (chủ project) KHÔNG rành lập trình. Luôn ưu tiên g
 ## Cấu trúc code (repo root — KHÔNG bọc thêm thư mục `/ttcq-app`, vì GitHub Pages cần `index.html` ở root)
 ```
 index.html                     -- markup Tailwind + Chart.js/Supabase CDN, chỉ 1 <script type="module" src="./app.js">
-app.js                          -- entry: import + init 3 module (auth, dashboard, records), KHÔNG chứa logic
-src/config.js                   -- SUPABASE_URL, SUPABASE_ANON, EDIT_ALLOWED (nơi DUY NHẤT sửa khi đổi key/email)
+app.js                          -- entry: import + init các module (auth, dashboard, records, adminUsers), KHÔNG chứa logic
+src/config.js                   -- SUPABASE_URL, SUPABASE_ANON (nơi DUY NHẤT sửa khi đổi key)
 src/api/supabaseClient.js       -- khởi tạo & export client `sb` (dùng window.supabase từ CDN)
 src/api/refDataApi.js           -- load 1 lần + cache: diem, doan_tuyen, lo_trinh, v_lo_trinh_km, v_doan_tuyen_ten, lu_tru_list — export getRefData()/tenDoanTuyen()
 src/api/recordsApi.js           -- CRUD ttcq_records + ttcq_records_doan_le (nested select 1 round-trip để lấy kèm tên đoạn/lộ trình)
+src/api/usersApi.js             -- CRUD bảng vai trò `app_users` (listUsers/updateUserRole/revokeUser)
 src/utils/format.js             -- fmt(), hexA() — formatting số/màu thuần
 src/utils/dateUtils.js          -- toàn bộ tính Date bằng Date.UTC(...): toIso/toVi/presetRange/monthRangeOfIso — KHÔNG dùng `new Date(y,m,d)` local time (đã gây lệch +1 ngày)
 src/utils/kmCalculator.js       -- computeLoTrinhKm()/computeDoanLeKm() — nguồn DUY NHẤT tính km_snapshot khi lưu record
 src/utils/statsUtils.js         -- hàm thuần tính dashboard: groupByMonth/groupByYear/groupByLoaiTuyen/groupByLuuTru — áp toàn bộ quy tắc dữ liệu bên dưới
 src/utils/chartHelpers.js       -- palette PAL/YC, plugin vẽ label lên Chart.js (lp/dpLp), màu grid/tick cho theme sáng
 src/components/                 -- modal.js, pagination.js, table.js, badge.js, toast.js — UI dùng chung, không chứa business logic
-src/modules/auth.js             -- login/logout, tính CAN_EDIT (whitelist `EDIT_ALLOWED` trong config.js), toggle class `view-only` trên `<body>`
+src/modules/auth.js             -- login/logout (Google OAuth + email/mật khẩu), tính CAN_EDIT/IS_ADMIN từ bảng `app_users`, toggle class `view-only` trên `<body>`
 src/modules/dashboard.js        -- load toàn bộ records 1 lần, tính stats qua statsUtils, render 6 chart + slicer năm
 src/modules/records.js          -- tab "Tổng hợp dữ liệu": filter/search/pagination + modal thêm/sửa với toggle loại nhập (lộ trình dựng sẵn / đoạn lẻ động)
+src/modules/adminUsers.js       -- tab "⚙️ Quản lý" (chỉ admin thấy): danh sách user + đổi vai trò/thu quyền qua usersApi
 ```
 **Nguyên tắc module hóa**: mỗi module/component chỉ export hàm, không đụng DOM của module khác ngoài phạm vi được giao. Thêm tính năng mới = thêm file mới đúng tầng (api/utils/components/modules), tránh nhồi logic nghiệp vụ vào `components/`.
 
-## Cơ chế phân quyền — chỉ là UI gating, KHÔNG phải bảo mật thật
-`EDIT_ALLOWED` trong `src/config.js` chỉ quyết định hiện/ẩn nút sửa (`body.view-only` + class `view-edit-only`). Bảo mật thật PHẢI dựa vào RLS policy ở Supabase — nếu RLS chưa chặn ghi cho user ngoài whitelist, ai đăng nhập Google cũng có thể gọi thẳng API ghi dữ liệu bất chấp UI.
+## Cơ chế phân quyền — bảng `app_users` (role: none/editor/admin)
+Đăng nhập được bằng Google OAuth HOẶC email/mật khẩu (`sb.auth.signUp`/`signInWithPassword`, xem `auth.js`). Mỗi tài khoản có đúng 1 dòng trong bảng `app_users` (tự tạo qua trigger `on_auth_user_created` khi đăng ký lần đầu, mặc định `role='none'`). `auth.js` sau khi đăng nhập luôn `select role from app_users` để tính `CAN_EDIT`/`IS_ADMIN` — KHÔNG còn whitelist hardcode trong code.
+
+- `role='admin'`: thấy thêm tab "⚙️ Quản lý" (`adminUsers.js`), đổi vai trò/thu quyền người khác qua `usersApi.updateUserRole`/`revokeUser`.
+- `role='editor'`/`'admin'`: thấy nút thêm/sửa/copy/xóa (`view-edit-only` + bỏ class `view-only` trên `<body>`).
+- `role='none'` (mặc định): chỉ xem.
+
+**Bảo mật thật nằm ở RLS**, KHÔNG phải UI: policy ghi trên `ttcq_records`/`ttcq_records_doan_le` dùng hàm `public.can_edit()` (security definer, tra `app_users`); policy sửa `app_users.role` dùng `public.is_admin()`. Nếu sửa/thêm bảng dữ liệu mới có thao tác ghi, PHẢI thêm policy dùng `can_edit()` tương tự — ẩn nút ở UI mà quên RLS thì ai đăng nhập cũng gọi thẳng API ghi được (đã từng gặp bug này với `ttcq_records_doan_le`).
 
 ## Quy tắc dữ liệu quan trọng — KHÔNG được vi phạm
 - `doan_tuyen.km` là NGUỒN SỰ THẬT DUY NHẤT về km từng đoạn ngắn. Không lưu km lộ trình dài tay — luôn tính qua `v_lo_trinh_km` (xem `kmCalculator.js`).

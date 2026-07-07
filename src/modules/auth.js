@@ -24,6 +24,11 @@ export function initAuth(supabaseClient, onChange) {
   return sb.auth.getSession().then(async ({ data: { session } }) => {
     if (session) await applyUser(session.user); else clearUser();
     sb.auth.onAuthStateChange(async (_, s) => { if (s) await applyUser(s.user); else clearUser(); });
+    // Don sach token/callback con sot lai tren URL sau khi Supabase da xu ly xong,
+    // tranh lan sau vo tinh gui lai cho Google gay loi "malformed request".
+    if (window.location.hash || window.location.search) {
+      history.replaceState(null, '', window.location.origin + window.location.pathname);
+    }
   });
 }
 
@@ -77,7 +82,10 @@ function clearUser() {
 }
 
 function loginGoogle() {
-  return sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.href } });
+  // Dung URL goc "sach" (bo query/hash con sot lai tu lan redirect OAuth truoc),
+  // tranh gui nguyen window.location.href co the da bi dinh rac lam Google tu choi request.
+  const cleanUrl = window.location.origin + window.location.pathname;
+  return sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: cleanUrl } });
 }
 
 async function doLogout() {

@@ -42,9 +42,9 @@ src/modules/adminUsers.js       -- tab "⚙️ Quản lý" (chỉ admin thấy):
 **Nguyên tắc module hóa**: mỗi module/component chỉ export hàm, không đụng DOM của module khác ngoài phạm vi được giao. Thêm tính năng mới = thêm file mới đúng tầng (api/utils/components/modules), tránh nhồi logic nghiệp vụ vào `components/`.
 
 ## Cơ chế phân quyền — bảng `app_users` (role: none/editor/admin)
-Đăng nhập được bằng Google OAuth HOẶC email/mật khẩu (`sb.auth.signUp`/`signInWithPassword`, xem `auth.js`). Mỗi tài khoản có đúng 1 dòng trong bảng `app_users` (tự tạo qua trigger `on_auth_user_created` khi đăng ký lần đầu, mặc định `role='none'`). `auth.js` sau khi đăng nhập luôn `select role from app_users` để tính `CAN_EDIT`/`IS_ADMIN` — KHÔNG còn whitelist hardcode trong code.
+Đăng nhập được bằng Google OAuth HOẶC email/mật khẩu (`auth.js`, chỉ `signInWithPassword` — KHÔNG có form đăng ký công khai). Mỗi tài khoản có đúng 1 dòng trong bảng `app_users` (tự tạo qua trigger `on_auth_user_created` khi tài khoản mới được tạo, mặc định `role='none'`). `auth.js` sau khi đăng nhập luôn `select role from app_users` để tính `CAN_EDIT`/`IS_ADMIN` — KHÔNG còn whitelist hardcode trong code.
 
-- `role='admin'`: thấy thêm tab "⚙️ Quản lý" (`adminUsers.js`), đổi vai trò/thu quyền người khác qua `usersApi.updateUserRole`/`revokeUser`.
+- `role='admin'`: thấy thêm tab "⚙️ Quản lý" (`adminUsers.js`) — đổi vai trò/thu quyền qua `usersApi.updateUserRole`/`revokeUser`, và **tạo tài khoản email/mật khẩu mới cho người khác** ngay trong tab này (không có đăng ký công khai). Việc tạo tài khoản dùng 1 client Supabase "tạm" riêng (`supabaseClient.createScratchClient()`, `persistSession:false`) để không ghi đè/đăng xuất phiên admin đang đăng nhập — xem `adminUsers.createUserAsAdmin`. Đây là kỹ thuật bắt buộc vì site tĩnh không có service role key để tạo user kiểu admin API thật.
 - `role='editor'`/`'admin'`: thấy nút thêm/sửa/copy/xóa (`view-edit-only` + bỏ class `view-only` trên `<body>`).
 - `role='none'` (mặc định): chỉ xem.
 

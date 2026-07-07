@@ -19,3 +19,12 @@ export function initSupabase() {
 export function getSb() {
   return sb;
 }
+
+// Client tạm, KHÔNG lưu session (persistSession:false) — dùng khi admin tạo tài khoản
+// email/mật khẩu cho người khác ngay trong app, để không ghi đè/đăng xuất phiên admin
+// đang đăng nhập trên client chính `sb`.
+export function createScratchClient() {
+  return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}

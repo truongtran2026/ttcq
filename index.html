@@ -213,6 +213,31 @@ body.view-only .view-edit-only{display:none!important}
 <div id="pageAdmin" style="display:none">
 <main class="p-6 max-w-[900px] mx-auto">
   <div class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">Quản lý người dùng</div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-4">
+    <div class="text-sm font-bold mb-3">➕ Tạo tài khoản email/mật khẩu mới</div>
+    <div class="grid gap-2.5 mb-3" style="grid-template-columns:1fr 1fr 140px">
+      <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-bold text-slate-400 uppercase">Email</label>
+        <input type="email" id="newUserEmail" class="border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-bold text-slate-400 uppercase">Mật khẩu</label>
+        <input type="password" id="newUserPassword" class="border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-bold text-slate-400 uppercase">Vai trò</label>
+        <select id="newUserRole" class="border border-slate-300 rounded-lg px-2 py-2 text-sm outline-none">
+          <option value="none">Chỉ xem</option>
+          <option value="editor" selected>Editor</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+    </div>
+    <div id="newUserMsg" class="text-xs mb-2"></div>
+    <button id="btnCreateUser" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold text-xs hover:bg-indigo-700">➕ Tạo tài khoản</button>
+  </div>
+
   <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
     <table class="w-full text-xs">
       <thead><tr class="bg-slate-50 text-[10px] uppercase tracking-wide text-slate-500">
@@ -227,11 +252,12 @@ body.view-only .view-edit-only{display:none!important}
 </main>
 </div>
 
-<!-- MODAL DANG NHAP / DANG KY BANG EMAIL -->
+<!-- MODAL DANG NHAP BANG EMAIL (khong co dang ky cong khai — tai khoan email/mat
+     khau chi duoc admin tao trong tab Quan ly) -->
 <div class="overlay fixed inset-0 bg-black/70 z-[500] items-center justify-center p-5" id="authOv">
   <div class="bg-white rounded-2xl w-full max-w-[380px] shadow-2xl">
     <div class="px-5 pt-4 pb-3.5 flex items-center justify-between border-b border-slate-200">
-      <div id="authModalTitle" class="text-base font-extrabold">Đăng nhập</div>
+      <div class="text-base font-extrabold">Đăng nhập bằng Email</div>
       <button data-close="authOv" class="text-slate-400 text-xl hover:text-slate-600">✕</button>
     </div>
     <div class="p-5">
@@ -245,8 +271,7 @@ body.view-only .view-edit-only{display:none!important}
       </div>
       <div id="authMsg" class="text-xs mt-2"></div>
     </div>
-    <div class="px-5 pb-4 flex items-center justify-between gap-2">
-      <button id="btnToggleAuthMode" class="text-xs text-indigo-600 font-semibold hover:underline">Chưa có tài khoản? Đăng ký</button>
+    <div class="px-5 pb-4 flex items-center justify-end gap-2">
       <button id="btnAuthSubmit" class="bg-indigo-600 text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-indigo-700 whitespace-nowrap">Đăng nhập</button>
     </div>
   </div>

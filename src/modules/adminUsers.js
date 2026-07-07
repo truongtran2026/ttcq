@@ -1,4 +1,5 @@
 import { listUsers, updateUserRole, revokeUser } from '../api/usersApi.js';
+import { createScratchClient } from '../api/supabaseClient.js';
 import { getUser } from './auth.js';
 import { showToast } from '../components/toast.js';
 
@@ -6,6 +7,7 @@ let sb = null;
 
 export function initAdminUsers(supabaseClient) {
   sb = supabaseClient;
+  document.getElementById('btnCreateUser').addEventListener('click', createUserAsAdmin);
 }
 
 export async function activateAdminTab() {
@@ -59,4 +61,39 @@ async function loadAndRender() {
     }
     await loadAndRender();
   };
+}
+
+function setNewUserMsg(msg, isError = false) {
+  const el = document.getElementById('newUserMsg');
+  el.textContent = msg;
+  el.className = 'text-xs mb-2 ' + (isError ? 'text-red-600' : 'text-emerald-600');
+}
+
+// Admin tạo tài khoản email/mật khẩu cho người khác — dùng 1 client "tạm" riêng
+// (không lưu session) để signUp KHÔNG ghi đè/đăng xuất phiên admin đang đăng nhập
+// trên client chính `sb`. Gán vai trò ngay sau khi tạo xong bằng client chính.
+async function createUserAsAdmin() {
+  const email = document.getElementById('newUserEmail').value.trim();
+  const password = document.getElementById('newUserPassword').value;
+  const role = document.getElementById('newUserRole').value;
+  if (!email || !password) { setNewUserMsg('Vui lòng nhập đủ email và mật khẩu.', true); return; }
+  if (password.length < 6) { setNewUserMsg('Mật khẩu cần ít nhất 6 ký tự.', true); return; }
+
+  const btn = document.getElementById('btnCreateUser');
+  btn.disabled = true;
+  try {
+    const scratch = createScratchClient();
+    const { data, error } = await scratch.auth.signUp({ email, password });
+    if (error) throw error;
+    if (!data.user) throw new Error('Không tạo được tài khoản.');
+    await updateUserRole(sb, data.user.id, role);
+    setNewUserMsg('Đã tạo tài khoản ✓' + (data.session ? '' : ' (có thể cần xác nhận email tùy cấu hình Supabase trước khi đăng nhập được)'));
+    document.getElementById('newUserEmail').value = '';
+    document.getElementById('newUserPassword').value = '';
+    await loadAndRender();
+  } catch (e) {
+    setNewUserMsg(e.message || String(e), true);
+  } finally {
+    btn.disabled = false;
+  }
 }

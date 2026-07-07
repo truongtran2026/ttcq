@@ -10,7 +10,6 @@ let sb = null;
 let user = null;
 let canEdit = false;
 let isAdmin = false;
-let authMode = 'signin';
 let onChangeCb = () => {};
 
 export function getUser() { return user; }
@@ -38,7 +37,6 @@ function wireDom() {
   });
   document.getElementById('btnLoginEmail').addEventListener('click', openAuthModal);
   document.getElementById('btnAuthSubmit').addEventListener('click', submitAuthForm);
-  document.getElementById('btnToggleAuthMode').addEventListener('click', toggleAuthMode);
   document.querySelectorAll('[data-close="authOv"]').forEach(b => b.addEventListener('click', closeAuthModal));
   wireOverlayBackdropClose('authOv');
 }
@@ -93,30 +91,16 @@ async function doLogout() {
   clearUser();
 }
 
-// ── Đăng nhập / đăng ký bằng email + mật khẩu ───────────────────
+// ── Đăng nhập bằng email + mật khẩu (KHÔNG có đăng ký công khai —
+// tài khoản email/mật khẩu chỉ được admin tạo trong tab "⚙️ Quản lý") ─
 function openAuthModal() {
-  authMode = 'signin';
   document.getElementById('authEmailInput').value = '';
   document.getElementById('authPasswordInput').value = '';
   setAuthMsg('');
-  updateAuthModalUI();
   openOverlay('authOv');
 }
 
 function closeAuthModal() { closeOverlay('authOv'); }
-
-function toggleAuthMode() {
-  authMode = authMode === 'signin' ? 'signup' : 'signin';
-  setAuthMsg('');
-  updateAuthModalUI();
-}
-
-function updateAuthModalUI() {
-  const isSignin = authMode === 'signin';
-  document.getElementById('authModalTitle').textContent = isSignin ? 'Đăng nhập' : 'Đăng ký tài khoản';
-  document.getElementById('btnAuthSubmit').textContent = isSignin ? 'Đăng nhập' : 'Đăng ký';
-  document.getElementById('btnToggleAuthMode').textContent = isSignin ? 'Chưa có tài khoản? Đăng ký' : 'Đã có tài khoản? Đăng nhập';
-}
 
 function setAuthMsg(msg, isError = false) {
   const el = document.getElementById('authMsg');
@@ -131,19 +115,9 @@ async function submitAuthForm() {
   const btn = document.getElementById('btnAuthSubmit');
   btn.disabled = true;
   try {
-    if (authMode === 'signin') {
-      const { error } = await sb.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      closeAuthModal();
-    } else {
-      const { data, error } = await sb.auth.signUp({ email, password });
-      if (error) throw error;
-      if (!data.session) {
-        setAuthMsg('Đăng ký thành công! Kiểm tra email để xác nhận trước khi đăng nhập.');
-      } else {
-        closeAuthModal();
-      }
-    }
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    closeAuthModal();
   } catch (e) {
     setAuthMsg(e.message || String(e), true);
   } finally {

@@ -1,6 +1,7 @@
 import { authBadgeState } from '../components/badge.js';
 import { getMyRole } from '../api/usersApi.js';
 import { openOverlay, closeOverlay, wireOverlayBackdropClose } from '../components/modal.js';
+import { showToast } from '../components/toast.js';
 
 const BTN_LOGIN = 'bg-indigo-600 text-white px-4 py-1.5 rounded-lg font-semibold text-xs hover:bg-indigo-700 transition-colors';
 const BTN_LOGOUT = 'bg-transparent text-slate-500 border border-slate-300 px-4 py-1.5 rounded-lg font-semibold text-xs hover:bg-slate-100 transition-colors';
@@ -39,7 +40,12 @@ function wireDom() {
 
 async function applyUser(u) {
   user = u;
-  const role = await getMyRole(sb, u.id);
+  let role = 'none';
+  try {
+    role = await getMyRole(sb, u.id);
+  } catch (e) {
+    showToast('Không tra được vai trò (app_users): ' + e.message, 'err');
+  }
   canEdit = role === 'editor' || role === 'admin';
   isAdmin = role === 'admin';
   document.getElementById('authEmail').textContent = u.email;

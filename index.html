@@ -84,7 +84,7 @@ body.view-only .view-edit-only{display:none!important}
   </div>
 
   <div class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">Hành trình theo tháng</div>
-  <div class="grid gap-4 mb-4" style="grid-template-columns:2fr 1fr">
+  <div class="grid grid-cols-1 sm:grid-cols-[2fr_1fr] gap-4 mb-4">
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
       <div class="flex justify-between items-start mb-3 flex-wrap gap-2">
         <div><div class="text-sm font-bold">Km theo từng tháng — so sánh cùng kỳ</div>
@@ -113,7 +113,7 @@ body.view-only .view-edit-only{display:none!important}
   </div>
 
   <div class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">Lưu trú nơi xa</div>
-  <div class="grid gap-4 mb-4" style="grid-template-columns:1fr 1fr">
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
       <div class="mb-3"><div class="text-sm font-bold">🏠 Số ngày ở nơi xa</div>
         <div class="text-xs text-slate-400 mt-0.5">Tổng số ngày lưu trú tại các địa điểm</div></div>
@@ -129,7 +129,7 @@ body.view-only .view-edit-only{display:none!important}
   </div>
 
   <div class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">So sánh theo năm</div>
-  <div class="grid gap-4 mb-4" style="grid-template-columns:1fr 1fr">
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
       <div class="mb-3"><div class="text-sm font-bold">Tổng km & số chuyến theo năm</div>
         <div class="text-xs text-slate-400 mt-0.5">Cột = km, Đường = số chuyến</div></div>
@@ -142,7 +142,7 @@ body.view-only .view-edit-only{display:none!important}
   </div>
 
   <div class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">Phân tích loại tuyến</div>
-  <div class="grid gap-4" style="grid-template-columns:1fr 1fr">
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
       <div class="flex justify-between items-start mb-3">
         <div class="text-sm font-bold">Số chuyến theo loại tuyến</div>
@@ -216,7 +216,7 @@ body.view-only .view-edit-only{display:none!important}
 
   <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-4">
     <div class="text-sm font-bold mb-3">➕ Tạo tài khoản mới (tên đăng nhập hoặc email)</div>
-    <div class="grid gap-2.5 mb-3" style="grid-template-columns:1fr 1fr 140px">
+    <div class="grid grid-cols-1 sm:grid-cols-[1fr_1fr_140px] gap-2.5 mb-3">
       <div class="flex flex-col gap-1">
         <label class="text-[10px] font-bold text-slate-400 uppercase">Tên đăng nhập / Email</label>
         <input type="text" id="newUserEmail" placeholder="vd: nguyenvana" class="border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
@@ -318,7 +318,7 @@ body.view-only .view-edit-only{display:none!important}
       </div>
       <div class="mb-0">
         <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-2">Thông tin bổ sung</div>
-        <div class="grid gap-2.5" style="grid-template-columns:1fr 1fr">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div class="flex flex-col gap-1"><label class="text-[10px] font-bold text-slate-400 uppercase">Lưu trú</label><select class="fsel border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none" id="fLuTru"><option value="">-- Không lưu trú --</option></select></div>
           <div class="flex flex-col gap-1"><label class="text-[10px] font-bold text-slate-400 uppercase">Ghi chú</label><input class="border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none" type="text" id="fGhiChu" placeholder="Ghi chú nếu cần..."></div>
         </div>

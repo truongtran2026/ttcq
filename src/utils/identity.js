@@ -1,8 +1,8 @@
 // Cho phép đăng nhập bằng "tên đăng nhập" đơn giản thay vì bắt buộc email thật —
 // Supabase Auth vẫn cần 1 địa chỉ dạng email để lưu trong auth.users, nên nếu người dùng
-// gõ không có "@" thì tự ghép thành "<tenDangNhap>@ttcq.local" phía dưới (miền giả, không
+// gõ không có "@" thì tự ghép thành "<tenDangNhap>@ttcq-user.app" phía dưới (miền giả, không
 // gửi mail thật). Nếu gõ có "@" (email thật) thì giữ nguyên như cũ.
-const FAKE_EMAIL_DOMAIN = 'ttcq.local';
+const FAKE_EMAIL_DOMAIN = 'ttcq-user.app';
 const USERNAME_RE = /^[a-zA-Z0-9._+-]+$/;
 
 export function toAuthEmail(input) {
@@ -14,7 +14,7 @@ export function toAuthEmail(input) {
   return v + '@' + FAKE_EMAIL_DOMAIN;
 }
 
-// Hiển thị lại cho người dùng: bỏ hậu tố "@ttcq.local" nếu là tài khoản username giả lập,
+// Hiển thị lại cho người dùng: bỏ hậu tố "@ttcq-user.app" nếu là tài khoản username giả lập,
 // còn email thật (Google/email thật) thì hiển thị nguyên vẹn.
 export function displayIdentity(email) {
   if (!email) return '';

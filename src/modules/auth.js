@@ -2,6 +2,7 @@ import { authBadgeState } from '../components/badge.js';
 import { getMyRole } from '../api/usersApi.js';
 import { openOverlay, closeOverlay, wireOverlayBackdropClose } from '../components/modal.js';
 import { showToast } from '../components/toast.js';
+import { toAuthEmail, displayIdentity } from '../utils/identity.js';
 
 const BTN_LOGIN = 'bg-indigo-600 text-white px-4 py-1.5 rounded-lg font-semibold text-xs hover:bg-indigo-700 transition-colors';
 const BTN_LOGOUT = 'bg-transparent text-slate-500 border border-slate-300 px-4 py-1.5 rounded-lg font-semibold text-xs hover:bg-slate-100 transition-colors';
@@ -51,7 +52,7 @@ async function applyUser(u) {
   }
   canEdit = role === 'editor' || role === 'admin';
   isAdmin = role === 'admin';
-  document.getElementById('authEmail').textContent = u.email;
+  document.getElementById('authEmail').textContent = displayIdentity(u.email);
   const { text, className } = authBadgeState(canEdit);
   const badge = document.getElementById('authBadge');
   badge.textContent = text;
@@ -109,12 +110,13 @@ function setAuthMsg(msg, isError = false) {
 }
 
 async function submitAuthForm() {
-  const email = document.getElementById('authEmailInput').value.trim();
+  const raw = document.getElementById('authEmailInput').value.trim();
   const password = document.getElementById('authPasswordInput').value;
-  if (!email || !password) { setAuthMsg('Vui lòng nhập đủ email và mật khẩu.', true); return; }
+  if (!raw || !password) { setAuthMsg('Vui lòng nhập đủ tên đăng nhập/email và mật khẩu.', true); return; }
   const btn = document.getElementById('btnAuthSubmit');
   btn.disabled = true;
   try {
+    const email = toAuthEmail(raw);
     const { error } = await sb.auth.signInWithPassword({ email, password });
     if (error) throw error;
     closeAuthModal();

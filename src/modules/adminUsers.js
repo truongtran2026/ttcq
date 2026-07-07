@@ -2,6 +2,7 @@ import { listUsers, updateUserRole, revokeUser } from '../api/usersApi.js';
 import { createScratchClient } from '../api/supabaseClient.js';
 import { getUser } from './auth.js';
 import { showToast } from '../components/toast.js';
+import { toAuthEmail, displayIdentity } from '../utils/identity.js';
 
 let sb = null;
 
@@ -30,7 +31,7 @@ async function loadAndRender() {
   const myId = getUser()?.id;
   const tbody = document.getElementById('adminUsersBody');
   tbody.innerHTML = users.map(u => `<tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0">
-    <td class="px-3 py-2 text-sm text-slate-700">${u.email}${u.user_id === myId ? ' <span class="text-[10px] text-slate-400">(bạn)</span>' : ''}</td>
+    <td class="px-3 py-2 text-sm text-slate-700">${displayIdentity(u.email)}${u.user_id === myId ? ' <span class="text-[10px] text-slate-400">(bạn)</span>' : ''}</td>
     <td class="px-3 py-2 text-xs text-slate-400 whitespace-nowrap">${new Date(u.created_at).toLocaleDateString('vi-VN')}</td>
     <td class="px-3 py-2">
       <select class="border border-slate-300 rounded-md px-2 py-1 text-xs outline-none" data-role-for="${u.user_id}">${roleOptionsHtml(u.role)}</select>
@@ -73,15 +74,16 @@ function setNewUserMsg(msg, isError = false) {
 // (không lưu session) để signUp KHÔNG ghi đè/đăng xuất phiên admin đang đăng nhập
 // trên client chính `sb`. Gán vai trò ngay sau khi tạo xong bằng client chính.
 async function createUserAsAdmin() {
-  const email = document.getElementById('newUserEmail').value.trim();
+  const raw = document.getElementById('newUserEmail').value.trim();
   const password = document.getElementById('newUserPassword').value;
   const role = document.getElementById('newUserRole').value;
-  if (!email || !password) { setNewUserMsg('Vui lòng nhập đủ email và mật khẩu.', true); return; }
+  if (!raw || !password) { setNewUserMsg('Vui lòng nhập đủ tên đăng nhập/email và mật khẩu.', true); return; }
   if (password.length < 6) { setNewUserMsg('Mật khẩu cần ít nhất 6 ký tự.', true); return; }
 
   const btn = document.getElementById('btnCreateUser');
   btn.disabled = true;
   try {
+    const email = toAuthEmail(raw);
     const scratch = createScratchClient();
     const { data, error } = await scratch.auth.signUp({ email, password });
     if (error) throw error;

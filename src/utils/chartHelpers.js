@@ -41,22 +41,28 @@ export function dpLp() {
     const R = meta.data[0] ? meta.data[0].outerRadius : 100;
     meta.data.forEach((arc, i) => {
       const v = ds.data[i]; if (!v) return;
-      const pct = (v / total * 100).toFixed(1), lbl = `${v} (${pct}%)`;
+      // So tren, % duoi (theo cap) - thay vi 1 dong dai "12 (34.5%)" de vua o lat cat hep.
+      const line1 = `${v}`, line2 = `${(v / total * 100).toFixed(1)}%`;
       const mid = (arc.startAngle + arc.endAngle) / 2, deg = (arc.endAngle - arc.startAngle) * 180 / Math.PI;
       const col = ds.backgroundColor[i] || PAL[i];
       if (deg >= 28) {
         const r = R * .78, tx = cx + Math.cos(mid) * r, ty = cy + Math.sin(mid) * r;
         ctx.save(); ctx.font = 'bold 10px JetBrains Mono,monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillText(lbl, tx + 1, ty + 1); ctx.fillStyle = '#fff'; ctx.fillText(lbl, tx, ty); ctx.restore();
+        ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillText(line1, tx + 1, ty - 5); ctx.fillText(line2, tx + 1, ty + 7);
+        ctx.fillStyle = '#fff'; ctx.fillText(line1, tx, ty - 6); ctx.fillText(line2, tx, ty + 6);
+        ctx.restore();
       } else {
         const r1 = R * 1.05, r2 = R * 1.22, r3 = R * 1.28;
         const x1 = cx + Math.cos(mid) * r1, y1 = cy + Math.sin(mid) * r1;
         const x2 = cx + Math.cos(mid) * r2, x3 = cx + Math.cos(mid) * r3 + (Math.cos(mid) >= 0 ? 14 : -14);
+        const ly = cy + Math.sin(mid) * r2;
         ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 1.2;
-        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, cy + Math.sin(mid) * r2); ctx.lineTo(x3, cy + Math.sin(mid) * r2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, ly); ctx.lineTo(x3, ly); ctx.stroke();
         ctx.font = 'bold 10px JetBrains Mono,monospace'; ctx.fillStyle = col;
         ctx.textAlign = Math.cos(mid) >= 0 ? 'left' : 'right'; ctx.textBaseline = 'middle';
-        ctx.fillText(lbl, x3 + (Math.cos(mid) >= 0 ? 3 : -3), cy + Math.sin(mid) * r2); ctx.restore();
+        const lx = x3 + (Math.cos(mid) >= 0 ? 3 : -3);
+        ctx.fillText(line1, lx, ly - 6); ctx.fillText(line2, lx, ly + 6);
+        ctx.restore();
       }
     });
   } };

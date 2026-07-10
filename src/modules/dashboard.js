@@ -190,12 +190,22 @@ function renderTrung() {
   const years = Object.keys(YEARS).sort();
   const tbv = years.map(y => YEARS[y].km / (YEARS[y].nThang || 1));
   const kpv = years.map(y => YEARS[y].chuyen > 0 ? YEARS[y].km / YEARS[y].chuyen : 0);
-  const lpTB = lp({ mode: 'bar-inside', color: '#ffffffcc', fmt: v => v > 0 ? fmt(v, 0) + ' km/tháng' : '', size: 10 });
+  // So tren, don vi duoi (theo cap) - tranh chu tran ra ngoai khi cot hep.
+  const lpTB = { id: 'tbLabel', afterDatasetsDraw(chart) {
+    const ctx = chart.ctx, meta = chart.getDatasetMeta(0); if (!meta || meta.hidden) return;
+    meta.data.forEach((el, i) => { const v = tbv[i]; if (!v) return; const h = el.height || 0; if (h < 24) return;
+      ctx.save(); ctx.fillStyle = '#ffffffcc'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = 'bold 10px JetBrains Mono,monospace'; ctx.fillText(fmt(v, 0), el.x, el.y + h / 2 - 6);
+      ctx.font = '9px JetBrains Mono,monospace'; ctx.fillText('km/tháng', el.x, el.y + h / 2 + 6);
+      ctx.restore(); });
+  } };
   const lpKP = { id: 'kpLabel', afterDatasetsDraw(chart) {
     const ctx = chart.ctx, meta = chart.getDatasetMeta(1); if (!meta || meta.hidden) return;
     meta.data.forEach((el, i) => { const v = kpv[i]; if (!v) return;
-      ctx.save(); ctx.font = 'bold 10px JetBrains Mono,monospace'; ctx.fillStyle = '#ffab40';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText(fmt(v, 1) + ' km/chuyến', el.x, el.y - 14); ctx.restore(); });
+      ctx.save(); ctx.fillStyle = '#ffab40'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      ctx.font = 'bold 10px JetBrains Mono,monospace'; ctx.fillText(fmt(v, 1), el.x, el.y - 23);
+      ctx.font = '9px JetBrains Mono,monospace'; ctx.fillText('km/chuyến', el.x, el.y - 12);
+      ctx.restore(); });
   } };
   charts.trung = new Chart(ctx, { type: 'bar', data: { labels: years, datasets: [
     { label: 'TB km/tháng', data: tbv, backgroundColor: hexA(PAL[4], .75), borderRadius: 6, borderWidth: 0, yAxisID: 'y', order: 2 },

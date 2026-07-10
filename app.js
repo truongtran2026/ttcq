@@ -20,6 +20,21 @@ function wireTabs() {
   document.getElementById('tabAdmin').addEventListener('click', () => switchTab('admin'));
 }
 
+// Tren dien thoai: an header khi cuon xuong (tranh che noi dung), hien lai ngay
+// khi cuon len du chi 1 chut - khoi phai keo ve tan dau trang moi doi tab duoc.
+// Tren man hinh lon (sm:+) rule CSS trong index.html khong ap dung transform nen
+// class nay khong co tac dung thi giac, header van luon hien nhu cu.
+function wireHeaderAutoHide() {
+  const header = document.querySelector('header');
+  let lastY = window.scrollY;
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    if (y > lastY && y > 80) header.classList.add('header-hidden');
+    else header.classList.remove('header-hidden');
+    lastY = y;
+  }, { passive: true });
+}
+
 async function switchTab(tab) {
   document.getElementById('pageDash').style.display = tab === 'dash' ? 'block' : 'none';
   document.getElementById('pageData').style.display = tab === 'data' ? 'block' : 'none';
@@ -41,6 +56,7 @@ function updateAdminTabVisibility() {
 
 async function main() {
   wireTabs();
+  wireHeaderAutoHide();
   const timer = setTimeout(() => showErr('Kết nối quá thời gian. Kiểm tra lại anon key.'), 15000);
   try {
     setLoadingText('Đang kết nối...');

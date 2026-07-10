@@ -233,7 +233,7 @@ function renderLoai() {
   const plugins = isR ? [dpLp()] : [lp({ mode: 'bar-top', color: (v, i) => PAL[i % PAL.length], fmt: v => v + ' chuyến', size: 10 })];
   charts.loai = new Chart(ctx, { type, data: { labels, datasets: [{ label: 'Chuyến', data: vals, backgroundColor: bg,
     borderColor: isR ? '#ffffff' : bg, borderWidth: isR ? 2 : 0, borderRadius: isR ? 0 : 5, cutout: type === 'doughnut' ? '60%' : undefined }] },
-    options: { responsive: true, maintainAspectRatio: false, layout: { padding: isR ? { right: 110, left: 20 } : { top: 24 } },
+    options: { responsive: true, maintainAspectRatio: false, layout: { padding: isR ? { right: 130, left: 20 } : { top: 24 } },
       plugins: { legend: { display: isR, position: 'right', labels: { color: CHART_TICK, font: { size: 11 }, usePointStyle: true, pointStyle: 'circle', boxWidth: 10, boxHeight: 10, padding: 9 } },
         tooltip: { callbacks: { label: c => ' ' + (c.parsed || c.raw) + ' chuyến' } } },
       scales: isR ? {} : { x: { grid: { color: CHART_GRID }, ticks: { color: CHART_TICK, font: { size: 10 } } },

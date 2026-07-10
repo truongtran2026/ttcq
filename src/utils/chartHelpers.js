@@ -64,14 +64,18 @@ export function dpLp() {
     });
 
     // Chong chong-cheo: cac nhan ben ngoai cung phia trai/phai gan nhau qua thi
-    // day gian cach toi thieu (sap theo truc doc roi day dan tu tren xuong).
-    const MIN_GAP = 26;
+    // dan deu quanh vi tri trung binh cua ca nhom (KHONG day don huong xuong duoi,
+    // vi day don huong lam nhan troi xa khoi lat cat, nhin roi hon).
+    const MIN_GAP = 22;
     [outsideLeft, outsideRight].forEach(items => {
+      if (items.length < 2) return;
       items.sort((a, b) => a.y - b.y);
-      for (let i = 1; i < items.length; i++) {
-        const minY = items[i - 1].y + MIN_GAP;
-        if (items[i].y < minY) items[i].y = minY;
-      }
+      let overlap = false;
+      for (let i = 1; i < items.length; i++) if (items[i].y - items[i - 1].y < MIN_GAP) { overlap = true; break; }
+      if (!overlap) return;
+      const avgY = items.reduce((s, it) => s + it.y, 0) / items.length;
+      let y = avgY - MIN_GAP * (items.length - 1) / 2;
+      items.forEach(it => { it.y = y; y += MIN_GAP; });
     });
 
     [...outsideLeft, ...outsideRight].forEach(({ line1, line2, col, x1, y1, x2, x3, y, isRight }) => {

@@ -39,6 +39,8 @@ export function dpLp() {
     const total = ds.data.reduce((s, v) => s + (v || 0), 0); if (!total) return;
     const cx = (chartArea.left + chartArea.right) / 2, cy = (chartArea.top + chartArea.bottom) / 2;
     const R = meta.data[0] ? meta.data[0].outerRadius : 100;
+    const outsideLeft = [], outsideRight = [];
+
     meta.data.forEach((arc, i) => {
       const v = ds.data[i]; if (!v) return;
       // So tren, % duoi (theo cap) - thay vi 1 dong dai "12 (34.5%)" de vua o lat cat hep.
@@ -53,17 +55,33 @@ export function dpLp() {
         ctx.restore();
       } else {
         const r1 = R * 1.05, r2 = R * 1.22, r3 = R * 1.28;
+        const isRight = Math.cos(mid) >= 0;
         const x1 = cx + Math.cos(mid) * r1, y1 = cy + Math.sin(mid) * r1;
-        const x2 = cx + Math.cos(mid) * r2, x3 = cx + Math.cos(mid) * r3 + (Math.cos(mid) >= 0 ? 14 : -14);
-        const ly = cy + Math.sin(mid) * r2;
-        ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 1.2;
-        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, ly); ctx.lineTo(x3, ly); ctx.stroke();
-        ctx.font = 'bold 10px JetBrains Mono,monospace'; ctx.fillStyle = col;
-        ctx.textAlign = Math.cos(mid) >= 0 ? 'left' : 'right'; ctx.textBaseline = 'middle';
-        const lx = x3 + (Math.cos(mid) >= 0 ? 3 : -3);
-        ctx.fillText(line1, lx, ly - 6); ctx.fillText(line2, lx, ly + 6);
-        ctx.restore();
+        const x2 = cx + Math.cos(mid) * r2;
+        const x3 = cx + Math.cos(mid) * r3 + (isRight ? 14 : -14);
+        (isRight ? outsideRight : outsideLeft).push({ line1, line2, col, x1, y1, x2, x3, y: cy + Math.sin(mid) * r2, isRight });
       }
+    });
+
+    // Chong chong-cheo: cac nhan ben ngoai cung phia trai/phai gan nhau qua thi
+    // day gian cach toi thieu (sap theo truc doc roi day dan tu tren xuong).
+    const MIN_GAP = 26;
+    [outsideLeft, outsideRight].forEach(items => {
+      items.sort((a, b) => a.y - b.y);
+      for (let i = 1; i < items.length; i++) {
+        const minY = items[i - 1].y + MIN_GAP;
+        if (items[i].y < minY) items[i].y = minY;
+      }
+    });
+
+    [...outsideLeft, ...outsideRight].forEach(({ line1, line2, col, x1, y1, x2, x3, y, isRight }) => {
+      ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y); ctx.lineTo(x3, y); ctx.stroke();
+      ctx.font = 'bold 10px JetBrains Mono,monospace'; ctx.fillStyle = col;
+      ctx.textAlign = isRight ? 'left' : 'right'; ctx.textBaseline = 'middle';
+      const lx = x3 + (isRight ? 3 : -3);
+      ctx.fillText(line1, lx, y - 6); ctx.fillText(line2, lx, y + 6);
+      ctx.restore();
     });
   } };
 }

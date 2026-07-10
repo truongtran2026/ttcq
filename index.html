@@ -29,6 +29,10 @@ body.view-only .view-edit-only{display:none!important}
 .tab-btn.active{background:#4f46e5;color:#fff}
 /* Tranh Safari/Chrome tren dien thoai tu dong zoom khi bam vao o nhap co chu <16px */
 @media (max-width:640px){ input, select, textarea { font-size:16px!important; } }
+/* Chua khoang trong an toan cho status bar (gio/song/wifi) khi chay dang PWA
+   toan man hinh (viewport-fit=cover) - thieu cai nay bi status bar de len UI */
+body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+#loading{padding-top:calc(env(safe-area-inset-top) + 1.25rem)}
 </style>
 </head>
 <body class="view-only bg-slate-50 text-slate-900">
@@ -52,22 +56,26 @@ body.view-only .view-edit-only{display:none!important}
   <button id="btnLogin" class="bg-indigo-600 text-white px-4 py-1.5 rounded-lg font-semibold text-xs hover:bg-indigo-700 transition-colors">Đăng nhập với Google</button>
 </div>
 
-<header class="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between sticky top-0 z-30 gap-4 flex-wrap">
-  <div class="flex items-center">
-    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-blue-500 rounded-xl flex items-center justify-center text-xl mr-3">📡</div>
-    <div><div class="text-base font-extrabold">Tuần tra <span class="text-indigo-600">Cáp quang</span></div>
-         <div class="text-xs text-slate-500">Hệ thống thống kê hành trình tuần tra</div></div>
-  </div>
-  <div class="flex-1 flex justify-center min-w-[220px]">
-    <div class="flex gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
-      <button id="tabDash" class="tab-btn active px-4 py-1.5 rounded-md text-sm font-semibold text-slate-500">📊 Dashboard</button>
-      <button id="tabData" class="tab-btn px-4 py-1.5 rounded-md text-sm font-semibold text-slate-500">🗂️ Tổng hợp dữ liệu</button>
-      <button id="tabAdmin" class="tab-btn px-4 py-1.5 rounded-md text-sm font-semibold text-slate-500" style="display:none">⚙️ Quản lý</button>
+<header class="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 sticky top-0 z-30">
+  <div class="flex items-center justify-between gap-3">
+    <div class="flex items-center min-w-0">
+      <div class="w-9 h-9 sm:w-10 sm:h-10 shrink-0 bg-gradient-to-br from-indigo-500 to-blue-500 rounded-xl flex items-center justify-center text-lg sm:text-xl mr-2.5 sm:mr-3">📡</div>
+      <div class="min-w-0">
+        <div class="text-sm sm:text-base font-extrabold truncate">Tuần tra <span class="text-indigo-600">Cáp quang</span></div>
+        <div class="hidden sm:block text-xs text-slate-500">Hệ thống thống kê hành trình tuần tra</div>
+      </div>
+    </div>
+    <div class="flex gap-2 items-center shrink-0">
+      <select id="yearFilter" class="border border-slate-300 rounded-lg px-2.5 sm:px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"><option value="all">Tất cả năm</option></select>
+      <button id="btnRefresh" class="bg-indigo-600 text-white px-3.5 sm:px-4 py-2 rounded-lg font-bold text-xs hover:bg-indigo-700 transition-colors">↻</button>
     </div>
   </div>
-  <div class="flex gap-2 items-center">
-    <select id="yearFilter" class="border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"><option value="all">Tất cả năm</option></select>
-    <button id="btnRefresh" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-xs hover:bg-indigo-700 transition-colors">↻</button>
+  <div class="flex justify-center mt-2 overflow-x-auto">
+    <div class="flex gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
+      <button id="tabDash" class="tab-btn active px-3 sm:px-4 py-1.5 rounded-md text-xs sm:text-sm font-semibold text-slate-500 whitespace-nowrap">📊 Dashboard</button>
+      <button id="tabData" class="tab-btn px-3 sm:px-4 py-1.5 rounded-md text-xs sm:text-sm font-semibold text-slate-500 whitespace-nowrap">🗂️ Tổng hợp dữ liệu</button>
+      <button id="tabAdmin" class="tab-btn px-3 sm:px-4 py-1.5 rounded-md text-xs sm:text-sm font-semibold text-slate-500 whitespace-nowrap" style="display:none">⚙️ Quản lý</button>
+    </div>
   </div>
 </header>
 

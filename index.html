@@ -164,7 +164,10 @@ header{transition:transform .25s ease}
           <button id="tb-lbar" class="tbtn bg-slate-100 border border-slate-200 text-slate-500 px-2.5 py-1 rounded-md text-xs font-semibold">Cột</button>
         </div>
       </div>
-      <div class="relative h-[320px]"><canvas id="cLoai"></canvas></div>
+      <div class="flex flex-col sm:flex-row items-center gap-3 sm:gap-6">
+        <div class="relative h-[280px] sm:h-[320px] w-full sm:flex-1 sm:min-w-0"><canvas id="cLoai"></canvas></div>
+        <div id="cLoaiLegend" class="flex flex-row sm:flex-col flex-wrap justify-center gap-x-3 gap-y-1.5 sm:gap-2 shrink-0"></div>
+      </div>
     </div>
     <div></div>
   </div>

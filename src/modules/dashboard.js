@@ -231,13 +231,27 @@ function renderLoai() {
   const isR = ['doughnut', 'pie'].includes(type);
   const bg = PAL.slice(0, labels.length).map(c => hexA(c, isR ? .9 : .8));
   const plugins = isR ? [dpLp()] : [lp({ mode: 'bar-top', color: (v, i) => PAL[i % PAL.length], fmt: v => v + ' chuyến', size: 10 })];
+  // Legend rieng bang HTML/CSS (khong dung legend ve san cua Chart.js) de canvas duoc
+  // toan bo dien tich sẵn co (tron to hon) va khoang cach voi legend dieu chinh bang
+  // CSS gap - doc lap voi kich thuoc canvas, khong lam bop nho hinh tron nhu truoc.
+  renderLoaiLegend(isR ? labels.map((l, i) => ({ label: l, color: PAL[i % PAL.length] })) : []);
   charts.loai = new Chart(ctx, { type, data: { labels, datasets: [{ label: 'Chuyến', data: vals, backgroundColor: bg,
     borderColor: isR ? '#ffffff' : bg, borderWidth: isR ? 2 : 0, borderRadius: isR ? 0 : 5, cutout: type === 'doughnut' ? '60%' : undefined }] },
-    options: { responsive: true, maintainAspectRatio: false, layout: { padding: isR ? { right: 100, left: 20 } : { top: 24 } },
-      plugins: { legend: { display: isR, position: 'right', labels: { color: CHART_TICK, font: { size: 11 }, usePointStyle: true, pointStyle: 'circle', boxWidth: 10, boxHeight: 10, padding: 9 } },
+    options: { responsive: true, maintainAspectRatio: false, layout: { padding: isR ? { left: 10 } : { top: 24 } },
+      plugins: { legend: { display: false },
         tooltip: { callbacks: { label: c => ' ' + (c.parsed || c.raw) + ' chuyến' } } },
       scales: isR ? {} : { x: { grid: { color: CHART_GRID }, ticks: { color: CHART_TICK, font: { size: 10 } } },
                      y: { grid: { color: CHART_GRID }, ticks: { color: CHART_TICK, font: { size: 10 } } } } }, plugins });
+}
+
+function renderLoaiLegend(items) {
+  const el = document.getElementById('cLoaiLegend');
+  if (!items.length) { el.innerHTML = ''; el.classList.add('hidden'); return; }
+  el.classList.remove('hidden');
+  el.innerHTML = items.map(({ label, color }) => `<div class="flex items-center gap-2 text-xs text-slate-600">
+    <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${color}"></span>
+    <span>${label}</span>
+  </div>`).join('');
 }
 
 function switchThang(t) { thangType = t; document.getElementById('tb-bar').classList.toggle('on', t === 'bar'); document.getElementById('tb-line').classList.toggle('on', t === 'line'); renderThang(t); }
